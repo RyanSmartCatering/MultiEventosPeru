@@ -52,17 +52,30 @@ export default function Home() {
           Bienvenido a la nueva era del catering y los eventos.
         </p>
 
-        {/* Main CTA */}
-        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-          <button className="group relative bg-gold text-black font-bold px-12 py-5 overflow-hidden transition-all tracking-[0.2em] uppercase text-xs shadow-[0_0_40px_rgba(255,195,0,0.2)] hover:shadow-[0_0_60px_rgba(255,195,0,0.4)]">
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-            <span className="relative">Comenzar mi Portafolio</span>
+        {/* Main CTA: Two Paths */}
+        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center w-full max-w-2xl mx-auto">
+          {/* Opción A: Invitados / Clientes */}
+          <button className="group relative w-full sm:w-1/2 border border-white/20 hover:border-gold bg-[#000814]/60 backdrop-blur-md text-white font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-[10px] md:text-xs">
+            <div className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+            <span className="relative flex flex-col items-center gap-2">
+              <span className="text-gold/80">Soy Invitado</span>
+              <span>Explorar Catálogos</span>
+            </span>
           </button>
           
-          <button className="text-white/70 font-bold tracking-[0.2em] uppercase text-xs border-b border-white/20 hover:border-gold hover:text-white transition-all pb-1">
-            Ver Demo Interactiva
+          {/* Opción B: Empresas de Catering */}
+          <button className="group relative w-full sm:w-1/2 bg-gold text-black font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-[10px] md:text-xs shadow-[0_0_30px_rgba(255,195,0,0.2)] hover:shadow-[0_0_50px_rgba(255,195,0,0.4)]">
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+            <span className="relative flex flex-col items-center gap-2">
+              <span className="text-black/60">Soy Empresa</span>
+              <span>Crear mi Portafolio</span>
+            </span>
           </button>
         </div>
+        
+        <p className="mt-8 text-[10px] text-white/40 uppercase tracking-[0.2em]">
+          * Requiere iniciar sesión para continuar
+        </p>
       </div>
 
       {/* Decorative Bottom Elements */}
