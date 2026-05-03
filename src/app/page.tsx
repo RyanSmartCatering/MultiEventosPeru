@@ -17,8 +17,13 @@ export default function Home() {
     });
   };
 
-  const handleExplore = () => {
-    router.push("/explorar");
+  const handleExploreLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/explorar`,
+      },
+    });
   };
 
   return (
@@ -82,26 +87,20 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center w-full max-w-2xl mx-auto">
           {/* Opción A: Invitados / Clientes */}
           <button 
-            onClick={handleExplore}
-            className="group relative w-full sm:w-1/2 border border-white/20 hover:border-gold bg-[#000814]/60 backdrop-blur-md text-white font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-[10px] md:text-xs"
+            onClick={handleExploreLogin}
+            className="group relative w-full sm:w-1/2 border border-white/20 hover:border-gold bg-[#000814]/60 backdrop-blur-md text-white font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-sm"
           >
             <div className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-            <span className="relative flex flex-col items-center gap-2">
-              <span className="text-gold/80">Soy Invitado</span>
-              <span>Explorar Catálogos</span>
-            </span>
+            <span className="relative tracking-[0.2em]">Explorar Catálogos</span>
           </button>
           
           {/* Opción B: Empresas de Catering */}
           <button 
             onClick={handleGoogleLogin}
-            className="group relative w-full sm:w-1/2 bg-gold text-black font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-[10px] md:text-xs shadow-[0_0_30px_rgba(255,195,0,0.2)] hover:shadow-[0_0_50px_rgba(255,195,0,0.4)]"
+            className="group relative w-full sm:w-1/2 bg-gold text-black font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-sm shadow-[0_0_30px_rgba(255,195,0,0.2)] hover:shadow-[0_0_50px_rgba(255,195,0,0.4)]"
           >
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-            <span className="relative flex flex-col items-center gap-2">
-              <span className="text-black/60">Soy Empresa</span>
-              <span>Crear mi Portafolio</span>
-            </span>
+            <span className="relative tracking-[0.2em]">Crear mi Portafolio</span>
           </button>
         </div>
         
