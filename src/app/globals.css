@@ -117,3 +117,9 @@ h1, h2, h3 {
   animation: pulse-slow 8s ease-in-out infinite;
 }
 
+/* Luxury dot grid background */
+.dot-bg {
+  background-image: radial-gradient(circle, rgba(255,195,0,0.07) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+

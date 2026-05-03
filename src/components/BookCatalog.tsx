@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,27 +19,24 @@ type Event = {
 
 const pageVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 120 : -120,
+    x: direction > 0 ? 100 : -100,
     opacity: 0,
-    rotateY: direction > 0 ? 40 : -40,
-    scale: 0.94,
-    filter: "blur(6px)",
+    rotateY: direction > 0 ? 35 : -35,
+    filter: "blur(5px)",
   }),
   center: {
     x: 0,
     opacity: 1,
     rotateY: 0,
-    scale: 1,
     filter: "blur(0px)",
-    transition: { duration: 0.65, ease: "easeOut" as const },
+    transition: { duration: 0.6, ease: "easeOut" as const },
   },
   exit: (direction: number) => ({
-    x: direction > 0 ? -120 : 120,
+    x: direction > 0 ? -100 : 100,
     opacity: 0,
-    rotateY: direction > 0 ? -40 : 40,
-    scale: 0.94,
-    filter: "blur(6px)",
-    transition: { duration: 0.45, ease: "easeIn" as const },
+    rotateY: direction > 0 ? -35 : 35,
+    filter: "blur(5px)",
+    transition: { duration: 0.4, ease: "easeIn" as const },
   }),
 };
 
@@ -56,9 +53,11 @@ export function BookCatalog({ event }: { event: Event }) {
 
   return (
     <div className="min-h-screen bg-[#00040c] text-white flex flex-col relative overflow-hidden">
-      {/* Decorative ambient orbs */}
-      <div className="fixed top-[-20vh] left-[-10vw] w-[50vw] h-[50vh] bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-[-20vh] right-[-10vw] w-[40vw] h-[40vh] bg-midnight/80 rounded-full blur-[100px] pointer-events-none" />
+      {/* Dot grid + orbs + gold accent */}
+      <div className="fixed inset-0 dot-bg pointer-events-none" />
+      <div className="fixed top-[-20vh] left-[-10vw] w-[55vw] h-[55vh] bg-gold/[0.05] rounded-full blur-[160px] pointer-events-none" />
+      <div className="fixed bottom-[-20vh] right-[-10vw] w-[45vw] h-[45vh] bg-midnight/80 rounded-full blur-[130px] pointer-events-none" />
+      <div className="fixed top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent pointer-events-none" />
 
       {/* ── BACK BUTTON ── */}
       <Link
@@ -69,10 +68,10 @@ export function BookCatalog({ event }: { event: Event }) {
       </Link>
 
       {/* ── MAIN BOOK ── */}
-      <div className="book-perspective flex-1 flex items-center justify-center px-4 py-20 md:py-8">
-        <div className="w-full max-w-7xl">
+      <div className="book-perspective flex-1 flex items-center justify-center px-2 md:px-6 py-6 md:py-8">
+        <div className="w-full max-w-[1500px]">
           {/* Book container */}
-          <div className="flex flex-col lg:flex-row w-full min-h-[85vh] rounded-none lg:rounded-sm overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.8),_0_0_0_1px_rgba(255,195,0,0.12)]">
+          <div className="flex flex-col lg:flex-row w-full min-h-screen lg:min-h-[94vh] rounded-none overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.8),_0_0_0_1px_rgba(255,195,0,0.12)]">
 
             {/* ── LEFT PAGE: Cover & Event Info (static) ── */}
             <div className="w-full lg:w-[42%] relative flex flex-col justify-between p-8 md:p-14 bg-[#000810] border-r border-gold/10 min-h-[50vh] lg:min-h-auto overflow-hidden">
@@ -140,7 +139,7 @@ export function BookCatalog({ event }: { event: Event }) {
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
-                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.4, ease: "easeOut" as const }}
                       className="text-3xl font-luxury text-gold tracking-wide"
                     >
                       {currentSection.title}
