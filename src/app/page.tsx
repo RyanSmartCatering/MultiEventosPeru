@@ -1,6 +1,26 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Home() {
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
+
+  const handleExplore = () => {
+    router.push("/explorar");
+  };
+
   return (
     <main className="relative h-screen w-full overflow-hidden bg-background">
       {/* Navigation */}
@@ -9,10 +29,16 @@ export default function Home() {
           MULTIEVENTS
         </div>
         <div className="flex items-center gap-4 md:gap-8">
-          <button className="text-white font-medium text-xs md:text-sm tracking-[0.2em] uppercase hover:text-gold transition-colors">
+          <button 
+            onClick={handleGoogleLogin}
+            className="text-white font-medium text-xs md:text-sm tracking-[0.2em] uppercase hover:text-gold transition-colors"
+          >
             Iniciar Sesión
           </button>
-          <button className="border border-gold/40 px-6 py-3 text-xs md:text-sm uppercase tracking-[0.2em] font-bold bg-gold/5 hover:bg-gold/20 transition-all text-gold backdrop-blur-sm">
+          <button 
+            onClick={handleGoogleLogin}
+            className="border border-gold/40 px-6 py-3 text-xs md:text-sm uppercase tracking-[0.2em] font-bold bg-gold/5 hover:bg-gold/20 transition-all text-gold backdrop-blur-sm"
+          >
             Registrarse
           </button>
         </div>
@@ -55,7 +81,10 @@ export default function Home() {
         {/* Main CTA: Two Paths */}
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center w-full max-w-2xl mx-auto">
           {/* Opción A: Invitados / Clientes */}
-          <button className="group relative w-full sm:w-1/2 border border-white/20 hover:border-gold bg-[#000814]/60 backdrop-blur-md text-white font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-[10px] md:text-xs">
+          <button 
+            onClick={handleExplore}
+            className="group relative w-full sm:w-1/2 border border-white/20 hover:border-gold bg-[#000814]/60 backdrop-blur-md text-white font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-[10px] md:text-xs"
+          >
             <div className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
             <span className="relative flex flex-col items-center gap-2">
               <span className="text-gold/80">Soy Invitado</span>
@@ -64,7 +93,10 @@ export default function Home() {
           </button>
           
           {/* Opción B: Empresas de Catering */}
-          <button className="group relative w-full sm:w-1/2 bg-gold text-black font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-[10px] md:text-xs shadow-[0_0_30px_rgba(255,195,0,0.2)] hover:shadow-[0_0_50px_rgba(255,195,0,0.4)]">
+          <button 
+            onClick={handleGoogleLogin}
+            className="group relative w-full sm:w-1/2 bg-gold text-black font-bold px-8 py-5 overflow-hidden transition-all tracking-[0.15em] uppercase text-[10px] md:text-xs shadow-[0_0_30px_rgba(255,195,0,0.2)] hover:shadow-[0_0_50px_rgba(255,195,0,0.4)]"
+          >
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
             <span className="relative flex flex-col items-center gap-2">
               <span className="text-black/60">Soy Empresa</span>
