@@ -110,7 +110,9 @@ export function BookCatalog({ event }: { event: Event }) {
       </AnimatePresence>
 
       {/* ══════════════════════ TOP BAR ══════════════════════ */}
-      <header className="relative z-50 flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05] bg-[#00040c]/70 backdrop-blur-2xl flex-shrink-0">
+      <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-4">
+        {/* Subtle top gradient so text is readable */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#00040c]/70 via-[#00040c]/20 to-transparent pointer-events-none" />
         {/* Back button */}
         <Link
           href="/explorar"
@@ -133,7 +135,7 @@ export function BookCatalog({ event }: { event: Event }) {
       </header>
 
       {/* ══════════════════════ MAIN BODY ══════════════════════ */}
-      <div className="relative z-10 flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <div className="relative z-10 h-full flex flex-col lg:flex-row overflow-hidden pt-14 lg:pt-0">
 
         {/* ─────── LEFT PANEL — Cover & Navigation ─────── */}
         <aside className="

@@ -39,8 +39,7 @@ export default function ExplorarPage() {
   });
 
   return (
-    /* h-full + overflow-hidden → sin scroll global; el grid interior tiene su propio scroll */
-    <main className="h-full w-full bg-background text-white flex flex-col overflow-hidden relative">
+    <main className="h-full w-full bg-background text-white relative overflow-hidden">
 
       {/* ── Rich luxury background ── */}
       <div className="bg-dots" />
@@ -57,16 +56,18 @@ export default function ExplorarPage() {
       <div className="bg-diamond" style={{ top: "30%", left: "6%", animationDelay: "1s" }} />
       <div className="bg-diamond" style={{ top: "70%", right: "6%", animationDelay: "3s" }} />
 
-      {/* ══════ NAV ══════ */}
-      <nav className="relative z-50 flex-shrink-0 w-full px-6 md:px-10 py-5 flex justify-between items-center border-b border-white/[0.05] bg-[#000814]/80 backdrop-blur-2xl">
+      {/* ══════ NAV — transparente, flota encima ══════ */}
+      <nav className="absolute top-0 left-0 right-0 z-50 px-6 md:px-10 py-5 flex justify-between items-center">
         <Link href="/" className="text-xl md:text-2xl font-luxury gold-gradient font-bold tracking-tighter hover:opacity-80 transition-opacity">
           MULTIEVENTS
         </Link>
         <UserNav />
       </nav>
 
+      {/* ══════ SCROLLABLE BODY (nav flota encima, pt compensa su altura) ══════ */}
+      <div className="h-full overflow-y-auto scrollbar-hide">
       {/* ══════ HEADER ══════ */}
-      <div className="relative z-10 flex-shrink-0 px-6 md:px-10 pt-8 pb-5">
+      <div className="relative z-10 px-6 md:px-10 pt-24 pb-5">
         <div className="max-w-[1600px] mx-auto">
           <p className="text-[9px] uppercase tracking-[0.55em] text-gold/50 mb-4 flex items-center gap-3">
             <span className="w-8 h-[1px] bg-gold/30" />
@@ -132,8 +133,8 @@ export default function ExplorarPage() {
         </div>
       </div>
 
-      {/* ══════ GRID — el único bloque con scroll ══════ */}
-      <div className="relative z-10 flex-1 overflow-y-auto scrollbar-hide px-6 md:px-10 pb-8">
+      {/* ══════ GRID ══════ */}
+      <div className="relative z-10 px-6 md:px-10 pb-12">
         <div className="max-w-[1600px] mx-auto">
           {filtered.length === 0 ? (
             <div className="text-center py-24 text-white/20">
@@ -180,6 +181,7 @@ export default function ExplorarPage() {
           )}
         </div>
       </div>
+      </div>{/* end scrollable */}
     </main>
   );
 }
