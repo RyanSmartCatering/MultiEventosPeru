@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Calendar, MapPin, MessageCircle, BookOpen } from "lucide-react";
+import {
+  ChevronLeft, ChevronRight, Calendar, MapPin,
+  MessageCircle, ArrowLeft, Star
+} from "lucide-react";
 import { UserNav } from "@/components/UserNav";
 
 type MenuItem = { name: string; description: string; image: string; tag?: string };
@@ -18,211 +21,337 @@ type Event = {
   sections: Section[];
 };
 
-const pageVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? 100 : -100,
+/* ─────────────────────────────── animations ─────────────────────────────── */
+const slideVariants = {
+  enter: (dir: number) => ({
+    x: dir > 0 ? "100%" : "-100%",
     opacity: 0,
-    rotateY: direction > 0 ? 35 : -35,
-    filter: "blur(5px)",
+    scale: 0.96,
   }),
   center: {
     x: 0,
     opacity: 1,
-    rotateY: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.6, ease: "easeOut" as const },
+    scale: 1,
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
   },
-  exit: (direction: number) => ({
-    x: direction > 0 ? -100 : 100,
+  exit: (dir: number) => ({
+    x: dir > 0 ? "-100%" : "100%",
     opacity: 0,
-    rotateY: direction > 0 ? -35 : 35,
-    filter: "blur(5px)",
-    transition: { duration: 0.4, ease: "easeIn" as const },
+    scale: 0.96,
+    transition: { duration: 0.4, ease: [0.55, 0, 0.78, 0] as const },
   }),
 };
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.09, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+};
+
+/* ─────────────────────────────── component ─────────────────────────────── */
 export function BookCatalog({ event }: { event: Event }) {
   const [[page, direction], setPage] = useState([0, 0]);
+  const [hoveredItem, setHoveredItem] = useState<number | null>(null);
 
-  const paginate = (newDirection: number) => {
-    const nextPage = page + newDirection;
-    if (nextPage < 0 || nextPage >= event.sections.length) return;
-    setPage([nextPage, newDirection]);
-  };
-
+  const totalPages = event.sections.length;
   const currentSection = event.sections[page];
 
+  const paginate = useCallback(
+    (dir: number) => {
+      const next = page + dir;
+      if (next < 0 || next >= totalPages) return;
+      setPage([next, dir]);
+    },
+    [page, totalPages]
+  );
+
+  /* Keyboard navigation */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") paginate(1);
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") paginate(-1);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [paginate]);
+
   return (
-    <div className="min-h-screen bg-[#00040c] text-white flex flex-col relative overflow-hidden">
-      {/* Dot grid + gold lines + orbs */}
-      <div className="fixed inset-0 dot-bg pointer-events-none opacity-50" />
-      <div className="fixed inset-0 gold-lines-bg pointer-events-none" />
-      <div className="fixed top-[-20vh] left-[-10vw] w-[55vw] h-[55vh] bg-gold/[0.05] rounded-full blur-[160px] pointer-events-none" />
-      <div className="fixed bottom-[-20vh] right-[-10vw] w-[45vw] h-[45vh] bg-midnight/80 rounded-full blur-[130px] pointer-events-none" />
-      <div className="fixed top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent pointer-events-none" />
+    <div className="relative h-full w-full overflow-hidden bg-[#00040c] text-white flex flex-col">
 
-      {/* ── Sticky top bar: back + UserNav ── */}
-      <div className="sticky top-0 z-50 px-6 md:px-10 py-4 flex justify-between items-center bg-[#00040c]/80 backdrop-blur-xl border-b border-white/[0.04]">
-        <Link href="/empresa/ryan-smart-catering" className="glass-btn flex items-center gap-2 px-5 py-2 rounded-full text-xs uppercase tracking-[0.2em] text-white/60 hover:text-gold">
-          <ChevronLeft className="w-3.5 h-3.5" /> Volver
+      {/* ── Global luxury background ── */}
+      <div className="bg-dots" />
+      <div className="bg-diag" />
+      <div className="bg-orb-tl" />
+      <div className="bg-orb-br" />
+      <div className="bg-line-top" />
+      <div className="bg-line-bottom" />
+
+      {/* ── Dynamic cover bg (blurred, behind everything) ── */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`bg-${page}`}
+          className="absolute inset-0 z-0"
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+        >
+          <Image
+            src={event.coverImage}
+            alt=""
+            fill
+            className="object-cover opacity-[0.08] grayscale scale-110"
+            priority
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* ══════════════════════ TOP BAR ══════════════════════ */}
+      <header className="relative z-50 flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05] bg-[#00040c]/70 backdrop-blur-2xl flex-shrink-0">
+        {/* Back button */}
+        <Link
+          href="/explorar"
+          className="flex items-center gap-2 text-white/40 hover:text-gold transition-colors duration-300 group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
+          <span className="text-[10px] uppercase tracking-[0.3em] hidden sm:block">Explorar</span>
         </Link>
+
+        {/* Center: event title */}
+        <div className="flex flex-col items-center">
+          <p className="text-[8px] uppercase tracking-[0.5em] text-gold/40 mb-0.5">Menú Exclusivo</p>
+          <h1 className="text-sm md:text-base font-luxury tracking-wide text-white/80 truncate max-w-[200px] md:max-w-xs">
+            {event.title}
+          </h1>
+        </div>
+
+        {/* Right: UserNav */}
         <UserNav />
-      </div>
+      </header>
 
-      {/* ── MAIN BOOK ── */}
-      <div className="book-perspective flex-1 flex items-center justify-center px-2 md:px-6 py-6 md:py-8">
-        <div className="w-full max-w-[1500px]">
-          {/* Book container */}
-          <div className="flex flex-col lg:flex-row w-full min-h-screen lg:min-h-[94vh] rounded-none overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.8),_0_0_0_1px_rgba(255,195,0,0.12)]">
+      {/* ══════════════════════ MAIN BODY ══════════════════════ */}
+      <div className="relative z-10 flex-1 flex flex-col lg:flex-row overflow-hidden">
 
-            {/* ── LEFT PAGE: Cover & Event Info (static) ── */}
-            <div className="w-full lg:w-[42%] relative flex flex-col justify-between p-8 md:p-14 bg-[#000810] border-r border-gold/10 min-h-[50vh] lg:min-h-auto overflow-hidden">
-              {/* Background image */}
-              <div className="absolute inset-0 z-0">
-                <Image src={event.coverImage} alt={event.title} fill className="object-cover opacity-[0.18] grayscale sepia-[0.4] scale-105" priority />
-                <div className="absolute inset-0 bg-gradient-to-br from-[#000810]/60 via-[#000810]/80 to-[#000810]" />
+        {/* ─────── LEFT PANEL — Cover & Navigation ─────── */}
+        <aside className="
+          relative flex-shrink-0
+          w-full lg:w-[320px] xl:w-[380px]
+          h-48 lg:h-full
+          overflow-hidden
+          border-b lg:border-b-0 lg:border-r border-gold/[0.12]
+        ">
+          {/* Cover image */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`cover-${page}`}
+              className="absolute inset-0"
+              initial={{ opacity: 0, scale: 1.08 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <Image
+                src={event.coverImage}
+                alt={event.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Overlay gradients */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#00040c] via-[#00040c]/60 to-[#00040c]/20 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#00040c]/40 z-10" />
+
+          {/* Gold corner ornaments */}
+          <div className="absolute top-4 left-4 w-8 h-8 border-t border-l border-gold/40 z-20 hidden lg:block" />
+          <div className="absolute top-4 right-4 w-8 h-8 border-t border-r border-gold/40 z-20 hidden lg:block" />
+          <div className="absolute bottom-4 left-4 w-8 h-8 border-b border-l border-gold/40 z-20 hidden lg:block" />
+          <div className="absolute bottom-4 right-4 w-8 h-8 border-b border-r border-gold/40 z-20 hidden lg:block" />
+
+          {/* Event info (bottom of left panel) */}
+          <div className="absolute bottom-0 left-0 right-0 z-20 p-6 lg:p-8">
+            {/* Stars */}
+            <div className="flex gap-1 mb-3 hidden lg:flex">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-3 h-3 fill-gold text-gold" />
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 mb-2 lg:mb-4 hidden lg:flex">
+              <div className="w-6 h-[1px] bg-gold/50" />
+              <span className="text-[9px] uppercase tracking-[0.4em] text-gold/60">Ryan Smart Catering</span>
+            </div>
+
+            <div className="hidden lg:flex flex-col gap-2 text-white/40 text-[10px] uppercase tracking-widest">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-3 h-3 text-gold/50" />
+                <span>{event.date}</span>
               </div>
-
-              {/* Gold corner ornaments */}
-              <div className="absolute top-6 left-6 w-12 h-12 border-t border-l border-gold/30 z-10" />
-              <div className="absolute top-6 right-6 w-12 h-12 border-t border-r border-gold/30 z-10" />
-              <div className="absolute bottom-6 left-6 w-12 h-12 border-b border-l border-gold/30 z-10" />
-              <div className="absolute bottom-6 right-6 w-12 h-12 border-b border-r border-gold/30 z-10" />
-
-              {/* Content */}
-              <div className="relative z-10 mt-8">
-                <div className="flex items-center gap-3 mb-8 opacity-60">
-                  <BookOpen className="w-4 h-4 text-gold" />
-                  <span className="text-[10px] uppercase tracking-[0.4em] text-gold">Menú Exclusivo</span>
-                </div>
-                <div className="w-20 h-[1px] bg-gold mb-8" />
-                <h1 className="text-4xl md:text-6xl font-luxury mb-8 leading-[1.1] tracking-tight text-white/90">
-                  {event.title}
-                </h1>
-                <div className="flex flex-col gap-3 text-xs uppercase tracking-widest text-white/40 mb-10 font-light border-l border-gold/20 pl-5">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-4 h-4 text-gold/60" /><span>{event.date}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MapPin className="w-4 h-4 text-gold/60" /><span>{event.location}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description at bottom */}
-              <div className="relative z-10 mb-4">
-                <p className="text-sm font-light leading-relaxed text-white/40 italic">
-                  &ldquo;{event.description}&rdquo;
-                </p>
-                {/* Chapter index dots */}
-                <div className="flex gap-2 mt-8">
-                  {event.sections.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setPage([i, i > page ? 1 : -1])}
-                      className={`h-[2px] transition-all duration-500 ${i === page ? 'w-8 bg-gold' : 'w-3 bg-white/20 hover:bg-white/40'}`}
-                    />
-                  ))}
-                </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-3 h-3 text-gold/50" />
+                <span>{event.location}</span>
               </div>
             </div>
 
-            {/* ── RIGHT PAGE: Animated Menu Content ── */}
-            <div className="w-full lg:w-[58%] bg-[#00070f] relative overflow-hidden flex flex-col">
-              {/* Chapter header */}
-              <div className="px-8 md:px-14 pt-10 pb-4 border-b border-white/5 flex items-center justify-between">
+            {/* Chapter dots nav */}
+            <div className="flex gap-2 mt-4 lg:mt-8">
+              {event.sections.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage([i, i > page ? 1 : -1])}
+                  title={s.title}
+                  className={`transition-all duration-500 rounded-full ${
+                    i === page
+                      ? "w-8 h-[3px] bg-gold shadow-[0_0_8px_rgba(255,195,0,0.6)]"
+                      : "w-[6px] h-[6px] bg-white/20 hover:bg-gold/40"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* ─────── RIGHT PANEL — Animated Menu Content ─────── */}
+        <div className="relative flex-1 flex flex-col overflow-hidden">
+
+          {/* Section header */}
+          <div className="flex-shrink-0 px-6 md:px-12 pt-6 pb-4 border-b border-white/[0.04]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`header-${page}`}
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 12 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="flex items-end justify-between"
+              >
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-gold/50 mb-1">
-                    Capítulo {page + 1} / {event.sections.length}
+                  <p className="text-[9px] uppercase tracking-[0.5em] text-gold/40 mb-1">
+                    Capítulo {page + 1} de {totalPages}
                   </p>
-                  <AnimatePresence mode="wait">
-                    <motion.h2
-                      key={`title-${page}`}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ duration: 0.4, ease: "easeOut" as const }}
-                      className="text-3xl font-luxury text-gold tracking-wide"
-                    >
-                      {currentSection.title}
-                    </motion.h2>
-                  </AnimatePresence>
+                  <h2 className="text-3xl md:text-4xl font-luxury text-white/90 tracking-wide">
+                    {currentSection.title}
+                  </h2>
                 </div>
-              </div>
+                <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 hidden md:block pb-1">
+                  {currentSection.items.length} especialidades
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-              {/* Animated items */}
-              <div className="flex-1 overflow-y-auto scrollbar-hide px-8 md:px-14 py-8">
-                <AnimatePresence mode="wait" custom={direction}>
+          {/* Items grid — SCROLLABLE only inside this panel */}
+          <div className="flex-1 overflow-y-auto scrollbar-hide px-6 md:px-12 py-6">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={page}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full"
+              >
+                {currentSection.items.map((item, idx) => (
                   <motion.div
-                    key={page}
-                    custom={direction}
-                    variants={pageVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="space-y-8"
+                    key={`${page}-${idx}`}
+                    custom={idx}
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="show"
+                    onHoverStart={() => setHoveredItem(idx)}
+                    onHoverEnd={() => setHoveredItem(null)}
+                    className="group relative overflow-hidden rounded-sm border border-white/[0.06] hover:border-gold/30 transition-all duration-500 cursor-default bg-white/[0.02] hover:bg-white/[0.04]"
+                    style={{ minHeight: "200px" }}
                   >
-                    {currentSection.items.map((item, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1, duration: 0.5 }}
-                        className="group flex flex-col sm:flex-row gap-6 items-start sm:items-center py-6 border-b border-white/5 last:border-0"
-                      >
-                        {/* Image */}
-                        <div className="relative w-full sm:w-32 h-52 sm:h-32 flex-shrink-0 overflow-hidden rounded-sm border border-gold/10 shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
-                          <Image
-                            src={item.image} alt={item.name} fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-700 sepia-[0.15]"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                        </div>
+                    {/* Background image */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="object-cover opacity-25 group-hover:opacity-40 group-hover:scale-110 transition-all duration-700 sepia-[0.2]"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#00040c]/95 via-[#00040c]/50 to-transparent" />
+                    </div>
 
-                        {/* Text */}
-                        <div className="flex-1">
-                          {item.tag && (
-                            <span className="inline-block text-[9px] uppercase tracking-[0.25em] text-gold border border-gold/25 px-3 py-1 mb-3 bg-gold/5 rounded-sm">
-                              {item.tag}
-                            </span>
-                          )}
-                          <h3 className="text-2xl font-luxury text-white/90 group-hover:text-gold transition-colors duration-300 mb-2">
-                            {item.name}
-                          </h3>
-                          <p className="text-sm text-white/40 font-light leading-relaxed max-w-md">
-                            {item.description}
-                          </p>
-                          <div className="mt-4 w-6 h-[1px] bg-gold/30 group-hover:w-14 transition-all duration-500" />
-                        </div>
-                      </motion.div>
-                    ))}
+                    {/* Gold corner accent */}
+                    <div className="absolute top-3 left-3 w-6 h-6 border-t border-l border-gold/0 group-hover:border-gold/40 transition-all duration-500 z-10" />
+                    <div className="absolute top-3 right-3 w-6 h-6 border-t border-r border-gold/0 group-hover:border-gold/40 transition-all duration-500 z-10" />
+
+                    {/* Tag */}
+                    {item.tag && (
+                      <div className="absolute top-4 right-4 z-20">
+                        <span className="text-[8px] uppercase tracking-[0.25em] text-gold border border-gold/30 bg-gold/10 backdrop-blur-sm px-2.5 py-1 rounded-sm">
+                          {item.tag}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Content */}
+                    <div className="relative z-10 h-full flex flex-col justify-end p-5">
+                      <div className="transform group-hover:-translate-y-1 transition-transform duration-300">
+                        <h3 className="text-xl md:text-2xl font-luxury text-white/90 group-hover:text-gold transition-colors duration-300 mb-2 leading-tight">
+                          {item.name}
+                        </h3>
+                        <p className="text-xs text-white/35 font-light leading-relaxed group-hover:text-white/50 transition-colors duration-300">
+                          {item.description}
+                        </p>
+                        {/* Expanding gold line */}
+                        <div className="mt-3 h-[1px] bg-gold/30 w-0 group-hover:w-full transition-all duration-700 ease-out" />
+                      </div>
+                    </div>
+
+                    {/* Hover gold glow */}
+                    <motion.div
+                      className="absolute inset-0 pointer-events-none"
+                      animate={{ opacity: hoveredItem === idx ? 1 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      style={{ background: "radial-gradient(ellipse at 50% 100%, rgba(255,195,0,0.06) 0%, transparent 70%)" }}
+                    />
                   </motion.div>
-                </AnimatePresence>
-              </div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-              {/* ── Page navigation controls ── */}
-              <div className="px-8 md:px-14 py-6 border-t border-white/5 flex items-center justify-between">
+          {/* ─── Bottom navigation ─── */}
+          <div className="flex-shrink-0 px-6 md:px-12 py-4 border-t border-white/[0.04] bg-[#00040c]/50 backdrop-blur-md flex items-center justify-between">
+            <button
+              onClick={() => paginate(-1)}
+              disabled={page === 0}
+              className="glass-btn flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[10px] uppercase tracking-[0.25em] disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-gold hover:border-gold/40 transition-all duration-300 group"
+            >
+              <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              Anterior
+            </button>
+
+            {/* Progress indicator */}
+            <div className="flex items-center gap-1">
+              {event.sections.map((_, i) => (
                 <button
-                  onClick={() => paginate(-1)}
-                  disabled={page === 0}
-                  className="glass-btn flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-[0.2em] disabled:opacity-20 disabled:cursor-not-allowed text-white/70 hover:text-gold"
-                >
-                  <ChevronLeft className="w-4 h-4" /> Anterior
-                </button>
-
-                <span className="text-[10px] uppercase tracking-[0.3em] text-white/25">
-                  {currentSection.title}
-                </span>
-
-                <button
-                  onClick={() => paginate(1)}
-                  disabled={page === event.sections.length - 1}
-                  className="glass-btn flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-[0.2em] disabled:opacity-20 disabled:cursor-not-allowed text-white/70 hover:text-gold"
-                >
-                  Siguiente <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+                  key={i}
+                  onClick={() => setPage([i, i > page ? 1 : -1])}
+                  className={`h-[2px] rounded-full transition-all duration-500 ${
+                    i === page ? "w-8 bg-gold" : "w-3 bg-white/15 hover:bg-white/30"
+                  }`}
+                />
+              ))}
             </div>
+
+            <button
+              onClick={() => paginate(1)}
+              disabled={page === totalPages - 1}
+              className="glass-btn flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[10px] uppercase tracking-[0.25em] disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-gold hover:border-gold/40 transition-all duration-300 group"
+            >
+              Siguiente
+              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
           </div>
         </div>
       </div>
@@ -230,10 +359,10 @@ export function BookCatalog({ event }: { event: Event }) {
       {/* ── WhatsApp floating button ── */}
       <a
         href="#"
-        className="fixed bottom-6 right-6 z-50 bg-gold text-black p-4 rounded-full shadow-[0_0_40px_rgba(255,195,0,0.35)] hover:scale-110 hover:shadow-[0_0_60px_rgba(255,195,0,0.5)] transition-all duration-300 flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-50 bg-gold text-black p-4 rounded-full shadow-[0_0_40px_rgba(255,195,0,0.4)] hover:scale-110 hover:shadow-[0_0_60px_rgba(255,195,0,0.6)] transition-all duration-300 flex items-center justify-center"
         aria-label="Contactar por WhatsApp"
       >
-        <MessageCircle className="w-6 h-6" />
+        <MessageCircle className="w-5 h-5" />
       </a>
     </div>
   );
