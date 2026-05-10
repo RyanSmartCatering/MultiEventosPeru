@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, Camera, Globe, Phone, Star, Calendar } from "lucide-react";
+import { UserNav } from "@/components/UserNav";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -31,17 +32,21 @@ export default async function EmpresaPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-background text-white pb-24 relative overflow-hidden">
-      {/* Ambient orbs */}
-      <div className="fixed top-0 right-0 w-[50vw] h-[40vh] bg-gold/[0.04] rounded-full blur-[160px] pointer-events-none" />
-      <div className="fixed bottom-0 left-0 w-[35vw] h-[35vh] bg-midnight/50 rounded-full blur-[130px] pointer-events-none" />
+      {/* Rich background layers */}
+      <div className="fixed inset-0 dot-bg pointer-events-none opacity-50" />
+      <div className="fixed inset-0 gold-lines-bg pointer-events-none" />
+      <div className="fixed top-0 right-0 w-[50vw] h-[50vh] bg-gold/[0.05] rounded-full blur-[180px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[40vw] h-[40vh] bg-gold/[0.04] rounded-full blur-[160px] pointer-events-none" />
+      <div className="fixed top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/30 to-transparent pointer-events-none" />
+      <div className="fixed bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/15 to-transparent pointer-events-none" />
 
-      {/* ── Back button (glassmorphism, floating) ── */}
-      <Link
-        href="/explorar"
-        className="glass-btn absolute top-6 left-6 z-50 flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.2em] text-white/60 hover:text-gold"
-      >
-        <ChevronLeft className="w-3.5 h-3.5" /> Volver
-      </Link>
+      {/* Back + UserNav sticky bar */}
+      <div className="sticky top-0 z-50 px-6 md:px-10 py-4 flex justify-between items-center bg-[#000814]/80 backdrop-blur-xl border-b border-white/[0.04]">
+        <Link href="/explorar" className="glass-btn flex items-center gap-2 px-5 py-2 rounded-full text-xs uppercase tracking-[0.2em] text-white/60 hover:text-gold">
+          <ChevronLeft className="w-3.5 h-3.5" /> Volver
+        </Link>
+        <UserNav />
+      </div>
 
       {/* ── Hero Banner ── */}
       <div className="relative h-[65vh] w-full">

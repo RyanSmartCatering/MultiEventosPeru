@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Calendar, MapPin, MessageCircle, BookOpen } from "lucide-react";
+import { UserNav } from "@/components/UserNav";
 
 type MenuItem = { name: string; description: string; image: string; tag?: string };
 type Section = { id: string; title: string; items: MenuItem[] };
@@ -53,19 +54,20 @@ export function BookCatalog({ event }: { event: Event }) {
 
   return (
     <div className="min-h-screen bg-[#00040c] text-white flex flex-col relative overflow-hidden">
-      {/* Dot grid + orbs + gold accent */}
-      <div className="fixed inset-0 dot-bg pointer-events-none" />
+      {/* Dot grid + gold lines + orbs */}
+      <div className="fixed inset-0 dot-bg pointer-events-none opacity-50" />
+      <div className="fixed inset-0 gold-lines-bg pointer-events-none" />
       <div className="fixed top-[-20vh] left-[-10vw] w-[55vw] h-[55vh] bg-gold/[0.05] rounded-full blur-[160px] pointer-events-none" />
       <div className="fixed bottom-[-20vh] right-[-10vw] w-[45vw] h-[45vh] bg-midnight/80 rounded-full blur-[130px] pointer-events-none" />
       <div className="fixed top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent pointer-events-none" />
 
-      {/* ── BACK BUTTON ── */}
-      <Link
-        href="/empresa/ryan-smart-catering"
-        className="glass-btn absolute top-6 left-6 z-50 flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.2em] text-white/70 hover:text-gold"
-      >
-        <ChevronLeft className="w-3.5 h-3.5" /> Volver
-      </Link>
+      {/* ── Sticky top bar: back + UserNav ── */}
+      <div className="sticky top-0 z-50 px-6 md:px-10 py-4 flex justify-between items-center bg-[#00040c]/80 backdrop-blur-xl border-b border-white/[0.04]">
+        <Link href="/empresa/ryan-smart-catering" className="glass-btn flex items-center gap-2 px-5 py-2 rounded-full text-xs uppercase tracking-[0.2em] text-white/60 hover:text-gold">
+          <ChevronLeft className="w-3.5 h-3.5" /> Volver
+        </Link>
+        <UserNav />
+      </div>
 
       {/* ── MAIN BOOK ── */}
       <div className="book-perspective flex-1 flex items-center justify-center px-2 md:px-6 py-6 md:py-8">

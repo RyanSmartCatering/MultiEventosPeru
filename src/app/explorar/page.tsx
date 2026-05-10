@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, SlidersHorizontal, MapPin } from "lucide-react";
+import { UserNav } from "@/components/UserNav";
 
 const LIMA_DISTRICTS = [
   "Todos","Miraflores","San Isidro","Surco","La Molina",
@@ -38,19 +39,26 @@ export default function ExplorarPage() {
 
   return (
     <main className="min-h-screen bg-background text-white pb-24 relative overflow-hidden">
-      <div className="fixed inset-0 dot-bg pointer-events-none" />
-      <div className="fixed top-[-15vh] left-[-10vw] w-[55vw] h-[55vh] bg-gold/[0.05] rounded-full blur-[180px] pointer-events-none" />
-      <div className="fixed bottom-[-20vh] right-[-10vw] w-[45vw] h-[45vh] bg-midnight/70 rounded-full blur-[150px] pointer-events-none" />
-      <div className="fixed top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/30 to-transparent pointer-events-none" />
+      {/* ── Rich luxury background ── */}
+      <div className="bg-dots" />
+      <div className="bg-diag" />
+      <div className="bg-vline-left" />
+      <div className="bg-vline-right" />
+      <div className="bg-orb-tl" />
+      <div className="bg-orb-br" />
+      <div className="bg-orb-center" />
+      <div className="bg-line-top" />
+      <div className="bg-line-bottom" />
+      <div className="bg-corner-tl" />
+      <div className="bg-corner-tr" />
+      <div className="bg-diamond" style={{ top: "30%", left: "6%", animationDelay: "1s" }} />
+      <div className="bg-diamond" style={{ top: "70%", right: "6%", animationDelay: "3s" }} />
 
       <nav className="w-full z-50 px-6 md:px-10 py-5 flex justify-between items-center border-b border-white/[0.04] bg-[#000814]/85 backdrop-blur-xl sticky top-0">
         <Link href="/" className="text-xl md:text-2xl font-luxury gold-gradient font-bold tracking-tighter hover:opacity-80 transition-opacity">
           MULTIEVENTS
         </Link>
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-white/40">
-          <MapPin className="w-3 h-3 text-gold/60" />
-          <span>Lima, Perú</span>
-        </div>
+        <UserNav />
       </nav>
 
       <div className="pt-16 pb-12 px-6 md:px-10 max-w-[1600px] mx-auto">

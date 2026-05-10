@@ -24,7 +24,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
-  background-image: radial-gradient(ellipse at 50% 0%, #001020 0%, #000814 60%);
+  background-image:
+    radial-gradient(ellipse at 15% 10%, rgba(255,195,0,0.07) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 90%, rgba(255,195,0,0.05) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(0,16,32,0.8) 0%, #000814 70%);
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -34,14 +37,14 @@ h1, h2, h3 {
   letter-spacing: 0.1em;
 }
 
-/* Luxury text gradient */
+/* ── Luxury text gradient ── */
 .gold-gradient {
   background: linear-gradient(135deg, #ffc300 0%, #ffdf80 50%, #cc9900 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Glassmorphism card */
+/* ── Glassmorphism card ── */
 .luxury-card {
   background: rgba(0, 29, 61, 0.4);
   backdrop-filter: blur(12px);
@@ -54,7 +57,7 @@ h1, h2, h3 {
   box-shadow: 0 0 30px rgba(255, 195, 0, 0.08);
 }
 
-/* Glass button */
+/* ── Glass button ── */
 .glass-btn {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(16px);
@@ -68,13 +71,13 @@ h1, h2, h3 {
   box-shadow: 0 0 20px rgba(255, 195, 0, 0.15);
 }
 
-/* 3D Book perspective wrapper */
+/* ── 3D Book perspective wrapper ── */
 .book-perspective {
   perspective: 2400px;
   perspective-origin: center center;
 }
 
-/* Scrollbar hidden */
+/* ── Scrollbar hidden ── */
 .scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -83,19 +86,7 @@ h1, h2, h3 {
   display: none;
 }
 
-/* Noise texture overlay */
-.noise-overlay::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  opacity: 0.5;
-  mix-blend-mode: overlay;
-  z-index: 1;
-}
-
-/* Animated gold shimmer */
+/* ── Animated gold shimmer ── */
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
@@ -108,18 +99,149 @@ h1, h2, h3 {
   animation: shimmer 4s linear infinite;
 }
 
-/* Slow pulse */
+/* ── Slow pulse ── */
 @keyframes pulse-slow {
   0%, 100% { opacity: 0.55; transform: scale(1.05); }
-  50% { opacity: 0.7; transform: scale(1.08); }
+  50%       { opacity: 0.72; transform: scale(1.08); }
 }
 .animate-pulse-slow {
   animation: pulse-slow 8s ease-in-out infinite;
 }
 
-/* Luxury dot grid background */
+/* ── Luxury dot grid background ── */
 .dot-bg {
-  background-image: radial-gradient(circle, rgba(255,195,0,0.07) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255,195,0,0.11) 1px, transparent 1px);
   background-size: 36px 36px;
 }
 
+/* ── Gold diagonal lines accent ── */
+.gold-lines-bg {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 40px,
+    rgba(255,195,0,0.04) 40px,
+    rgba(255,195,0,0.04) 41px
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   GLOBAL LUXURY BACKGROUND LAYER  (fixed, z-0)
+   Applied via <LuxuryBg /> or copied into each layout
+═══════════════════════════════════════════════════ */
+
+/* Top-left large gold orb */
+.bg-orb-tl {
+  position: fixed;
+  top: -20vh; left: -10vw;
+  width: 60vw; height: 60vh;
+  background: radial-gradient(ellipse at center, rgba(255,195,0,0.09) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* Bottom-right large gold orb */
+.bg-orb-br {
+  position: fixed;
+  bottom: -20vh; right: -10vw;
+  width: 55vw; height: 55vh;
+  background: radial-gradient(ellipse at center, rgba(255,195,0,0.06) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* Center soft midnight glow */
+.bg-orb-center {
+  position: fixed;
+  top: 30%; left: 50%;
+  transform: translateX(-50%);
+  width: 50vw; height: 50vh;
+  background: radial-gradient(ellipse at center, rgba(0,45,90,0.25) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* Horizontal gold top line */
+.bg-line-top {
+  position: fixed;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,195,0,0.5) 50%, transparent 100%);
+  pointer-events: none; z-index: 10;
+}
+
+/* Horizontal gold bottom line */
+.bg-line-bottom {
+  position: fixed;
+  bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,195,0,0.25) 50%, transparent 100%);
+  pointer-events: none; z-index: 10;
+}
+
+/* Corner frame accent — top-left */
+.bg-corner-tl {
+  position: fixed;
+  top: 64px; left: 20px;
+  width: 80px; height: 80px;
+  border-top: 1px solid rgba(255,195,0,0.18);
+  border-left: 1px solid rgba(255,195,0,0.18);
+  pointer-events: none; z-index: 10;
+}
+
+/* Corner frame accent — top-right */
+.bg-corner-tr {
+  position: fixed;
+  top: 64px; right: 20px;
+  width: 80px; height: 80px;
+  border-top: 1px solid rgba(255,195,0,0.18);
+  border-right: 1px solid rgba(255,195,0,0.18);
+  pointer-events: none; z-index: 10;
+}
+
+/* Dot grid overlay */
+.bg-dots {
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,195,0,0.08) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none; z-index: 0;
+  opacity: 0.7;
+}
+
+/* Gold diagonal lines overlay */
+.bg-diag {
+  position: fixed; inset: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 60px,
+    rgba(255,195,0,0.025) 60px,
+    rgba(255,195,0,0.025) 61px
+  );
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Floating diamond ornament (purely CSS) ── */
+@keyframes float-diamond {
+  0%, 100% { transform: translateY(0px) rotate(45deg); opacity: 0.18; }
+  50%       { transform: translateY(-12px) rotate(45deg); opacity: 0.32; }
+}
+.bg-diamond {
+  position: fixed;
+  width: 10px; height: 10px;
+  border: 1px solid rgba(255,195,0,0.6);
+  transform: rotate(45deg);
+  animation: float-diamond 6s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Vertical decorative gold lines ── */
+.bg-vline-left {
+  position: fixed;
+  top: 0; bottom: 0; left: 5vw;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(255,195,0,0.1) 30%, rgba(255,195,0,0.1) 70%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+.bg-vline-right {
+  position: fixed;
+  top: 0; bottom: 0; right: 5vw;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(255,195,0,0.07) 30%, rgba(255,195,0,0.07) 70%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
