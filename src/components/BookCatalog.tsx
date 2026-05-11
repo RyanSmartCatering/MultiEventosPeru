@@ -1,371 +1,326 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ChevronLeft, ChevronRight, Calendar, MapPin,
-  MessageCircle, ArrowLeft, Star
-} from "lucide-react";
-import { UserNav } from "@/components/UserNav";
+import { ArrowLeft, Share2, Download, Check, MapPin, Calendar, Clock, Star } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-type MenuItem = { name: string; description: string; image: string; tag?: string };
-type Section = { id: string; title: string; items: MenuItem[] };
-type Event = {
-  title: string;
-  date: string;
-  location: string;
-  description: string;
-  coverImage: string;
-  sections: Section[];
-};
-
-/* ─────────────────────────────── animations ─────────────────────────────── */
-const slideVariants = {
-  enter: (dir: number) => ({
-    x: dir > 0 ? "100%" : "-100%",
-    opacity: 0,
-    scale: 0.96,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
-  },
-  exit: (dir: number) => ({
-    x: dir > 0 ? "-100%" : "100%",
-    opacity: 0,
-    scale: 0.96,
-    transition: { duration: 0.4, ease: [0.55, 0, 0.78, 0] as const },
-  }),
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.09, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
-  }),
-};
-
-/* ─────────────────────────────── component ─────────────────────────────── */
-export function BookCatalog({ event }: { event: Event }) {
-  const [[page, direction], setPage] = useState([0, 0]);
-  const [hoveredItem, setHoveredItem] = useState<number | null>(null);
-
-  const totalPages = event.sections.length;
-  const currentSection = event.sections[page];
-
-  const paginate = useCallback(
-    (dir: number) => {
-      const next = page + dir;
-      if (next < 0 || next >= totalPages) return;
-      setPage([next, dir]);
+// Update mock to simulate a LARGE catalog
+const mockCatalog = {
+  id: "gala-verano-2026",
+  title: "Gala de Verano 2026",
+  company: "Ryan Smart Catering",
+  date: "15 Enero 2026",
+  location: "Hacienda Los Ficus, Pachacámac",
+  pax: "250 invitados",
+  coverImage: "/hero.png",
+  description: "Una propuesta integral diseñada exclusivamente para una noche de verano inolvidable. Ingredientes de origen local, presentación vanguardista y un servicio impecable que elevará cada momento de la celebración.",
+  sections: [
+    {
+      id: "recepcion",
+      title: "Recepción y Cóctel",
+      description: "Aperitivos fríos y calientes para recibir a los invitados durante el atardecer.",
+      items: [
+        { id: "c1", name: "Tartar de Salmón", desc: "Con palta brûlée, alcaparras y emulsión de maracuyá en galleta de sésamo.", image: "/hero.png", tag: "Frio" },
+        { id: "c2", name: "Crocante de Pato", desc: "Confit de pato en masa philo con chutney de frutos rojos.", image: "/hero.png", tag: "Caliente" },
+        { id: "c3", name: "Ceviche Carretillero VIP", desc: "Pesca del día, leche de tigre al ají amarillo, chicharrón de calamar.", image: "/hero.png", tag: "Fresco" },
+        { id: "c4", name: "Tataki de Atún", desc: "Atún aleta amarilla sellado, ponzu trufado, crocante de ajo.", image: "/hero.png", tag: "Frio" },
+        { id: "c5", name: "Mini Empanadas", desc: "De lomo saltado clásico con salsa huancaína ahumada.", image: "/hero.png", tag: "Caliente" },
+        { id: "c6", name: "Espárragos Trufados", desc: "Envueltos en jamón ibérico con reducción de balsámico.", image: "/hero.png", tag: "Premium" },
+      ]
     },
-    [page, totalPages]
-  );
+    {
+      id: "plato-fondo",
+      title: "Platos de Fondo",
+      description: "El momento central de la noche. Opciones cuidadosamente seleccionadas.",
+      items: [
+        { id: "p1", name: "Asado de Tira Estofado", desc: "Cocción lenta por 48h, puré rústico de papa amarilla y vegetales glaseados.", image: "/hero.png", tag: "Carne" },
+        { id: "p2", name: "Salmón en Costra de Finas Hierbas", desc: "Sobre risotto de quinua negra y espárragos al grill.", image: "/hero.png", tag: "Pescado" },
+        { id: "p3", name: "Ravioles de Zapallo Loche", desc: "En mantequilla de salvia, almendras tostadas y queso grana padano.", image: "/hero.png", tag: "Vegetariano" },
+        { id: "p4", name: "Panceta Crujiente", desc: "Con puré de camote y reducción de chicha morada.", image: "/hero.png", tag: "Cerdo" },
+      ]
+    },
+    {
+      id: "postres",
+      title: "Mesa de Postres",
+      description: "Una sinfonía de dulces para coronar la cena.",
+      items: [
+        { id: "d1", name: "Esfera de Chocolate", desc: "Mousse de chocolate bitter 70%, centro de frambuesa y praliné.", image: "/hero.png" },
+        { id: "d2", name: "Suspiro a la Limeña de Lúcuma", desc: "Clásico reinventado con tierra de cacao.", image: "/hero.png" },
+        { id: "d3", name: "Cheesecake de Frutos Rojos", desc: "Base de galleta de almendras y coulis de frutos del bosque.", image: "/hero.png" },
+        { id: "d4", name: "Macarons Surtidos", desc: "Pistacho, frambuesa, vainilla y maracuyá.", image: "/hero.png" },
+        { id: "d5", name: "Mini Tartaletas", desc: "De limón con merengue suizo flameado.", image: "/hero.png" },
+      ]
+    },
+    {
+      id: "bar",
+      title: "Bar Premium",
+      description: "Coctelería de autor y clásicos atemporales.",
+      items: [
+        { id: "b1", name: "Pisco Sour Catedral", desc: "Pisco Quebranta, limón tahití, jarabe de goma artesanal.", image: "/hero.png" },
+        { id: "b2", name: "Gin Tonic Botánico", desc: "Gin Tanqueray Ten, tónica premium, pepino, bayas de enebro.", image: "/hero.png" },
+        { id: "b3", name: "Aperol Spritz", desc: "Aperol, prosecco, soda y rodaja de naranja.", image: "/hero.png" },
+        { id: "b4", name: "Margarita Spicy", desc: "Tequila reposado, cointreau, limón y borde de sal con ají limo.", image: "/hero.png" },
+      ]
+    },
+    {
+      id: "mobiliario",
+      title: "Mobiliario y Menaje",
+      description: "El setup físico que acompañará el evento.",
+      items: [
+        { id: "m1", name: "Mesas Imperiales", desc: "Madera rústica lavada, sin mantel, ideales para 12 personas.", image: "/hero.png" },
+        { id: "m2", name: "Sillas Dior", desc: "Acrílico transparente con cojín de terciopelo beige.", image: "/hero.png" },
+        { id: "m3", name: "Menaje Gold", desc: "Platos base dorados, cubertería de acero inoxidable bañada en oro 24k.", image: "/hero.png" },
+        { id: "m4", name: "Copas de Cristal de Bohemia", desc: "Línea premium para agua, vino tinto y vino blanco.", image: "/hero.png" },
+      ]
+    }
+  ]
+};
 
-  /* Keyboard navigation */
+type CatalogItem = {
+  id?: string;
+  name: string;
+  desc?: string;
+  description?: string;
+  image: string;
+  tag?: string;
+};
+
+type CatalogSection = {
+  id: string;
+  title: string;
+  description?: string;
+  items: CatalogItem[];
+};
+
+type CatalogEvent = {
+  id: string;
+  title: string;
+  company?: string;
+  date?: string;
+  location?: string;
+  pax?: string;
+  coverImage: string;
+  description: string;
+  sections: CatalogSection[];
+};
+
+export function BookCatalog({ event }: { event: CatalogEvent }) {
+  // Use event if provided, otherwise fallback to mock (for testing)
+  const catalog = event || mockCatalog;
+  const [activeSection, setActiveSection] = useState(catalog.sections[0]?.id || "");
+  const [copied, setCopied] = useState(false);
+  
+  // Ref array to track sections for scrollspy
+  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+
+  // Intersection Observer for scroll spy
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") paginate(1);
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") paginate(-1);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [paginate]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the section that is most visible
+        const visibleEntries = entries.filter(entry => entry.isIntersecting);
+        if (visibleEntries.length > 0) {
+          // Sort by visibility ratio
+          visibleEntries.sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+          setActiveSection(visibleEntries[0].target.id);
+        }
+      },
+      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.2, 0.5, 0.8, 1] }
+    );
+
+    sectionRefs.current.forEach(ref => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#00040c] text-white flex flex-col">
+    <main className="h-full w-full bg-[#00040a] text-white overflow-hidden relative flex flex-col">
+      {/* ══════════════════════ GLOBAL BACKGROUNDS ══════════════════════ */}
+      <div className="absolute inset-0 bg-dots opacity-40 pointer-events-none" />
+      <div className="absolute inset-0 bg-diag pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[40vw] h-[40vh] bg-gold/[0.04] rounded-full blur-[150px] pointer-events-none" />
 
-      {/* ── Global luxury background ── */}
-      <div className="bg-dots" />
-      <div className="bg-diag" />
-      <div className="bg-orb-tl" />
-      <div className="bg-orb-br" />
-      <div className="bg-line-top" />
-      <div className="bg-line-bottom" />
-
-      {/* ── Dynamic cover bg (blurred, behind everything) ── */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`bg-${page}`}
-          className="absolute inset-0 z-0"
-          initial={{ opacity: 0, scale: 1.06 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-        >
-          <Image
-            src={event.coverImage}
-            alt=""
-            fill
-            className="object-cover opacity-[0.08] grayscale scale-110"
-            priority
-          />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* ══════════════════════ TOP BAR ══════════════════════ */}
-      <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-4">
-        {/* Subtle top gradient so text is readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#00040c]/70 via-[#00040c]/20 to-transparent pointer-events-none" />
-        {/* Back button */}
-        <Link
-          href="/explorar"
-          className="flex items-center gap-2 text-white/40 hover:text-gold transition-colors duration-300 group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-          <span className="text-[10px] uppercase tracking-[0.3em] hidden sm:block">Explorar</span>
+      {/* ══════════════════════ ABSOLUTE HEADER ══════════════════════ */}
+      <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#00040a]/90 via-[#00040a]/40 to-transparent pointer-events-none" />
+        
+        <Link href={`/empresa/${(catalog.company || 'ryan-smart-catering').toLowerCase().replace(/ /g, '-')}`} className="relative z-10 glass-btn flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-[0.2em] text-white/60 hover:text-gold transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5" /> Volver
         </Link>
 
-        {/* Center: event title */}
-        <div className="flex flex-col items-center">
-          <p className="text-[8px] uppercase tracking-[0.5em] text-gold/40 mb-0.5">Menú Exclusivo</p>
-          <h1 className="text-sm md:text-base font-luxury tracking-wide text-white/80 truncate max-w-[200px] md:max-w-xs">
-            {event.title}
-          </h1>
+        <div className="relative z-10 flex gap-3">
+          <button onClick={handleShare} className="glass-btn w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-gold transition-colors">
+            {copied ? <Check className="w-4 h-4 text-green-400" /> : <Share2 className="w-4 h-4" />}
+          </button>
+          <button className="glass-btn w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-gold transition-colors">
+            <Download className="w-4 h-4" />
+          </button>
         </div>
-
-        {/* Right: UserNav */}
-        <UserNav />
       </header>
 
-      {/* ══════════════════════ MAIN BODY ══════════════════════ */}
-      <div className="relative z-10 h-full flex flex-col lg:flex-row overflow-hidden pt-14 lg:pt-0">
-
-        {/* ─────── LEFT PANEL — Cover & Navigation ─────── */}
-        <aside className="
-          relative flex-shrink-0
-          w-full lg:w-[320px] xl:w-[380px]
-          h-48 lg:h-full
-          overflow-hidden
-          border-b lg:border-b-0 lg:border-r border-gold/[0.12]
-        ">
-          {/* Cover image */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`cover-${page}`}
-              className="absolute inset-0"
-              initial={{ opacity: 0, scale: 1.08 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              <Image
-                src={event.coverImage}
-                alt={event.title}
-                fill
-                className="object-cover"
-                priority
-              />
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Overlay gradients */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#00040c] via-[#00040c]/60 to-[#00040c]/20 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#00040c]/40 z-10" />
-
-          {/* Gold corner ornaments */}
-          <div className="absolute top-4 left-4 w-8 h-8 border-t border-l border-gold/40 z-20 hidden lg:block" />
-          <div className="absolute top-4 right-4 w-8 h-8 border-t border-r border-gold/40 z-20 hidden lg:block" />
-          <div className="absolute bottom-4 left-4 w-8 h-8 border-b border-l border-gold/40 z-20 hidden lg:block" />
-          <div className="absolute bottom-4 right-4 w-8 h-8 border-b border-r border-gold/40 z-20 hidden lg:block" />
-
-          {/* Event info (bottom of left panel) */}
-          <div className="absolute bottom-0 left-0 right-0 z-20 p-6 lg:p-8">
-            {/* Stars */}
-            <div className="flex gap-1 mb-3 hidden lg:flex">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-3 h-3 fill-gold text-gold" />
-              ))}
-            </div>
-
-            <div className="flex items-center gap-2 mb-2 lg:mb-4 hidden lg:flex">
-              <div className="w-6 h-[1px] bg-gold/50" />
-              <span className="text-[9px] uppercase tracking-[0.4em] text-gold/60">Ryan Smart Catering</span>
-            </div>
-
-            <div className="hidden lg:flex flex-col gap-2 text-white/40 text-[10px] uppercase tracking-widest">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-3 h-3 text-gold/50" />
-                <span>{event.date}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-3 h-3 text-gold/50" />
-                <span>{event.location}</span>
-              </div>
-            </div>
-
-            {/* Chapter dots nav */}
-            <div className="flex gap-2 mt-4 lg:mt-8">
-              {event.sections.map((s, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPage([i, i > page ? 1 : -1])}
-                  title={s.title}
-                  className={`transition-all duration-500 rounded-full ${
-                    i === page
-                      ? "w-8 h-[3px] bg-gold shadow-[0_0_8px_rgba(255,195,0,0.6)]"
-                      : "w-[6px] h-[6px] bg-white/20 hover:bg-gold/40"
-                  }`}
-                />
-              ))}
-            </div>
+      {/* ══════════════════════ MAIN SCROLLABLE AREA ══════════════════════ */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide relative z-10 scroll-smooth pb-32">
+        
+        {/* ── HERO COVER ── */}
+        <section className="relative w-full min-h-[60vh] md:min-h-[70vh] flex flex-col justify-end">
+          <div className="absolute inset-0">
+            <Image src={catalog.coverImage} alt="Cover" fill className="object-cover sepia-[0.15]" priority />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#00040a] via-[#00040a]/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00040a]/80 to-transparent" />
           </div>
-        </aside>
 
-        {/* ─────── RIGHT PANEL — Animated Menu Content ─────── */}
-        <div className="relative flex-1 flex flex-col overflow-hidden">
+          <div className="relative z-10 px-6 md:px-16 pb-16 max-w-5xl">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="glass-btn px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.3em] text-gold">
+                Propuesta Oficial
+              </span>
+              <span className="text-white/40 text-[10px] uppercase tracking-widest">{catalog.company || "Catering Premium"}</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-luxury text-white mb-6 leading-[1.1]">
+              {catalog.title}
+            </h1>
+            
+            <p className="text-white/50 md:text-lg max-w-2xl leading-relaxed mb-8 font-light">
+              {catalog.description}
+            </p>
 
-          {/* Section header */}
-          <div className="flex-shrink-0 px-6 md:px-12 pt-6 pb-4 border-b border-white/[0.04]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`header-${page}`}
-                initial={{ opacity: 0, y: -12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 12 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="flex items-end justify-between"
-              >
-                <div>
-                  <p className="text-[9px] uppercase tracking-[0.5em] text-gold/40 mb-1">
-                    Capítulo {page + 1} de {totalPages}
-                  </p>
-                  <h2 className="text-3xl md:text-4xl font-luxury text-white/90 tracking-wide">
-                    {currentSection.title}
-                  </h2>
+            <div className="flex flex-wrap gap-x-8 gap-y-4 text-sm">
+              {[
+                { icon: Calendar, text: catalog.date || "Fecha por definir" },
+                { icon: MapPin, text: catalog.location || "Lugar del evento" },
+                { icon: Clock, text: catalog.pax || "Invitados" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2.5 text-white/60">
+                  <item.icon className="w-4 h-4 text-gold/70" />
+                  <span className="tracking-wide">{item.text}</span>
                 </div>
-                <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 hidden md:block pb-1">
-                  {currentSection.items.length} especialidades
-                </p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Items grid — SCROLLABLE only inside this panel */}
-          <div className="flex-1 overflow-y-auto scrollbar-hide px-6 md:px-12 py-6">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={page}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full"
-              >
-                {currentSection.items.map((item, idx) => (
-                  <motion.div
-                    key={`${page}-${idx}`}
-                    custom={idx}
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="show"
-                    onHoverStart={() => setHoveredItem(idx)}
-                    onHoverEnd={() => setHoveredItem(null)}
-                    className="group relative overflow-hidden rounded-sm border border-white/[0.06] hover:border-gold/30 transition-all duration-500 cursor-default bg-white/[0.02] hover:bg-white/[0.04]"
-                    style={{ minHeight: "200px" }}
-                  >
-                    {/* Background image */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover opacity-25 group-hover:opacity-40 group-hover:scale-110 transition-all duration-700 sepia-[0.2]"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#00040c]/95 via-[#00040c]/50 to-transparent" />
-                    </div>
-
-                    {/* Gold corner accent */}
-                    <div className="absolute top-3 left-3 w-6 h-6 border-t border-l border-gold/0 group-hover:border-gold/40 transition-all duration-500 z-10" />
-                    <div className="absolute top-3 right-3 w-6 h-6 border-t border-r border-gold/0 group-hover:border-gold/40 transition-all duration-500 z-10" />
-
-                    {/* Tag */}
-                    {item.tag && (
-                      <div className="absolute top-4 right-4 z-20">
-                        <span className="text-[8px] uppercase tracking-[0.25em] text-gold border border-gold/30 bg-gold/10 backdrop-blur-sm px-2.5 py-1 rounded-sm">
-                          {item.tag}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Content */}
-                    <div className="relative z-10 h-full flex flex-col justify-end p-5">
-                      <div className="transform group-hover:-translate-y-1 transition-transform duration-300">
-                        <h3 className="text-xl md:text-2xl font-luxury text-white/90 group-hover:text-gold transition-colors duration-300 mb-2 leading-tight">
-                          {item.name}
-                        </h3>
-                        <p className="text-xs text-white/35 font-light leading-relaxed group-hover:text-white/50 transition-colors duration-300">
-                          {item.description}
-                        </p>
-                        {/* Expanding gold line */}
-                        <div className="mt-3 h-[1px] bg-gold/30 w-0 group-hover:w-full transition-all duration-700 ease-out" />
-                      </div>
-                    </div>
-
-                    {/* Hover gold glow */}
-                    <motion.div
-                      className="absolute inset-0 pointer-events-none"
-                      animate={{ opacity: hoveredItem === idx ? 1 : 0 }}
-                      transition={{ duration: 0.3 }}
-                      style={{ background: "radial-gradient(ellipse at 50% 100%, rgba(255,195,0,0.06) 0%, transparent 70%)" }}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* ─── Bottom navigation ─── */}
-          <div className="flex-shrink-0 px-6 md:px-12 py-4 border-t border-white/[0.04] bg-[#00040c]/50 backdrop-blur-md flex items-center justify-between">
-            <button
-              onClick={() => paginate(-1)}
-              disabled={page === 0}
-              className="glass-btn flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[10px] uppercase tracking-[0.25em] disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-gold hover:border-gold/40 transition-all duration-300 group"
-            >
-              <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-              Anterior
-            </button>
-
-            {/* Progress indicator */}
-            <div className="flex items-center gap-1">
-              {event.sections.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPage([i, i > page ? 1 : -1])}
-                  className={`h-[2px] rounded-full transition-all duration-500 ${
-                    i === page ? "w-8 bg-gold" : "w-3 bg-white/15 hover:bg-white/30"
-                  }`}
-                />
               ))}
             </div>
-
-            <button
-              onClick={() => paginate(1)}
-              disabled={page === totalPages - 1}
-              className="glass-btn flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[10px] uppercase tracking-[0.25em] disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-gold hover:border-gold/40 transition-all duration-300 group"
-            >
-              Siguiente
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </button>
           </div>
+        </section>
+
+        {/* ── SPLIT LAYOUT (SIDEBAR + CONTENT) ── */}
+        <div className="max-w-[1600px] mx-auto px-6 md:px-16 flex flex-col lg:flex-row gap-12 lg:gap-24 relative">
+          
+          {/* LEFT SIDEBAR (Sticky Nav) */}
+          <aside className="lg:w-64 flex-shrink-0">
+            <div className="sticky top-28 hidden lg:block border-l border-white/[0.05] py-4">
+              <h3 className="text-[10px] uppercase tracking-[0.3em] text-gold mb-6 pl-6">Índice del Evento</h3>
+              <nav className="flex flex-col gap-1">
+                {catalog.sections.map((sec) => (
+                  <button
+                    key={sec.id}
+                    onClick={() => scrollToSection(sec.id)}
+                    className={`text-left px-6 py-2.5 text-xs tracking-wider transition-all duration-300 border-l-[3px]
+                      ${activeSection === sec.id 
+                        ? "border-gold text-white bg-white/[0.03] font-medium" 
+                        : "border-transparent text-white/40 hover:text-white/80 hover:bg-white/[0.01]"
+                      }`}
+                  >
+                    {sec.title}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Mobile horizontal nav */}
+            <div className="lg:hidden flex overflow-x-auto scrollbar-hide border-b border-white/[0.05] pb-1 -mx-6 px-6 sticky top-0 bg-[#00040a]/95 backdrop-blur z-40">
+              {catalog.sections.map((sec) => (
+                <button
+                  key={sec.id}
+                  onClick={() => scrollToSection(sec.id)}
+                  className={`flex-shrink-0 px-4 py-4 text-[11px] uppercase tracking-wider transition-all border-b-2 whitespace-nowrap
+                    ${activeSection === sec.id ? "border-gold text-gold" : "border-transparent text-white/40"}`}
+                >
+                  {sec.title}
+                </button>
+              ))}
+            </div>
+          </aside>
+
+          {/* RIGHT CONTENT (Sections & Items) */}
+          <div className="flex-1 pb-32">
+            {catalog.sections.map((section, secIdx) => (
+              <section 
+                key={section.id} 
+                id={section.id} 
+                className="mb-24 scroll-mt-32"
+                ref={el => { sectionRefs.current[secIdx] = el }}
+              >
+                {/* Section Header */}
+                <div className="mb-10">
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className="text-gold/50 font-luxury text-xl">
+                      {String(secIdx + 1).padStart(2, "0")}
+                    </span>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-gold/30 to-transparent" />
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-luxury text-white mb-3">
+                    {section.title}
+                  </h2>
+                  <p className="text-white/40 text-sm">{section.description}</p>
+                </div>
+
+                {/* Items Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  {section.items.map((item) => (
+                    <div key={item.id} className="group flex gap-5 p-4 rounded-lg hover:bg-white/[0.02] border border-transparent hover:border-white/[0.05] transition-all duration-300">
+                      
+                      {/* Thumbnail */}
+                      <div className="w-24 h-24 flex-shrink-0 relative rounded-md overflow-hidden bg-white/5">
+                        <Image 
+                          src={item.image} 
+                          alt={item.name} 
+                          fill 
+                          className="object-cover sepia-[0.2] group-hover:sepia-0 group-hover:scale-110 transition-all duration-500" 
+                        />
+                        <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-md" />
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 flex flex-col justify-center">
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <h3 className="text-base font-luxury text-white/90 group-hover:text-gold transition-colors leading-tight">
+                            {item.name}
+                          </h3>
+                          {item.tag && (
+                            <span className="flex-shrink-0 text-[8px] uppercase tracking-widest text-gold/60 border border-gold/20 px-1.5 py-0.5 rounded-sm">
+                              {item.tag}
+                           </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-white/40 leading-relaxed line-clamp-3">
+                          {item.desc || item.description}
+                        </p>
+                      </div>
+                      
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+
         </div>
       </div>
-
-      {/* ── WhatsApp floating button ── */}
-      <a
-        href="#"
-        className="fixed bottom-6 right-6 z-50 bg-gold text-black p-4 rounded-full shadow-[0_0_40px_rgba(255,195,0,0.4)] hover:scale-110 hover:shadow-[0_0_60px_rgba(255,195,0,0.6)] transition-all duration-300 flex items-center justify-center"
-        aria-label="Contactar por WhatsApp"
-      >
-        <MessageCircle className="w-5 h-5" />
-      </a>
-    </div>
+    </main>
   );
 }
