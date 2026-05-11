@@ -1,13 +1,42 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Share2, Download, Check, MapPin, Calendar, Clock, Star } from "lucide-react";
+import { ArrowLeft, Share2, Download, Check, MapPin, Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Update mock to simulate a LARGE catalog
-const mockCatalog = {
+// Types
+type CatalogItem = {
+  id?: string;
+  name: string;
+  desc?: string;
+  description?: string;
+  image: string;
+  tag?: string;
+};
+
+type CatalogSection = {
+  id: string;
+  title: string;
+  description?: string;
+  items: CatalogItem[];
+};
+
+type CatalogEvent = {
+  id: string;
+  title: string;
+  company?: string;
+  date?: string;
+  location?: string;
+  pax?: string;
+  coverImage: string;
+  description: string;
+  sections: CatalogSection[];
+};
+
+// Mock data
+const mockCatalog: CatalogEvent = {
   id: "gala-verano-2026",
   title: "Gala de Verano 2026",
   company: "Ryan Smart Catering",
@@ -52,96 +81,65 @@ const mockCatalog = {
         { id: "d4", name: "Macarons Surtidos", desc: "Pistacho, frambuesa, vainilla y maracuyá.", image: "/hero.png" },
         { id: "d5", name: "Mini Tartaletas", desc: "De limón con merengue suizo flameado.", image: "/hero.png" },
       ]
-    },
-    {
-      id: "bar",
-      title: "Bar Premium",
-      description: "Coctelería de autor y clásicos atemporales.",
-      items: [
-        { id: "b1", name: "Pisco Sour Catedral", desc: "Pisco Quebranta, limón tahití, jarabe de goma artesanal.", image: "/hero.png" },
-        { id: "b2", name: "Gin Tonic Botánico", desc: "Gin Tanqueray Ten, tónica premium, pepino, bayas de enebro.", image: "/hero.png" },
-        { id: "b3", name: "Aperol Spritz", desc: "Aperol, prosecco, soda y rodaja de naranja.", image: "/hero.png" },
-        { id: "b4", name: "Margarita Spicy", desc: "Tequila reposado, cointreau, limón y borde de sal con ají limo.", image: "/hero.png" },
-      ]
-    },
-    {
-      id: "mobiliario",
-      title: "Mobiliario y Menaje",
-      description: "El setup físico que acompañará el evento.",
-      items: [
-        { id: "m1", name: "Mesas Imperiales", desc: "Madera rústica lavada, sin mantel, ideales para 12 personas.", image: "/hero.png" },
-        { id: "m2", name: "Sillas Dior", desc: "Acrílico transparente con cojín de terciopelo beige.", image: "/hero.png" },
-        { id: "m3", name: "Menaje Gold", desc: "Platos base dorados, cubertería de acero inoxidable bañada en oro 24k.", image: "/hero.png" },
-        { id: "m4", name: "Copas de Cristal de Bohemia", desc: "Línea premium para agua, vino tinto y vino blanco.", image: "/hero.png" },
-      ]
     }
   ]
 };
 
-type CatalogItem = {
-  id?: string;
-  name: string;
-  desc?: string;
-  description?: string;
-  image: string;
-  tag?: string;
-};
+const ITEMS_PER_PAGE = 4;
 
-type CatalogSection = {
-  id: string;
-  title: string;
-  description?: string;
-  items: CatalogItem[];
-};
-
-type CatalogEvent = {
-  id: string;
-  title: string;
-  company?: string;
-  date?: string;
-  location?: string;
-  pax?: string;
-  coverImage: string;
-  description: string;
-  sections: CatalogSection[];
-};
-
-export function BookCatalog({ event }: { event: CatalogEvent }) {
-  // Use event if provided, otherwise fallback to mock (for testing)
+export function BookCatalog({ event }: { event?: CatalogEvent }) {
   const catalog = event || mockCatalog;
-  const [activeSection, setActiveSection] = useState(catalog.sections[0]?.id || "");
-  const [copied, setCopied] = useState(false);
   
-  // Ref array to track sections for scrollspy
-  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+  // States
+  const [activeSectionIndex, setActiveSectionIndex] = useState(-1); // -1 means "Cover"
+  const [currentPage, setCurrentPage] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const [direction, setDirection] = useState(1);
 
-  // Intersection Observer for scroll spy
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Find the section that is most visible
-        const visibleEntries = entries.filter(entry => entry.isIntersecting);
-        if (visibleEntries.length > 0) {
-          // Sort by visibility ratio
-          visibleEntries.sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-          setActiveSection(visibleEntries[0].target.id);
-        }
-      },
-      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.2, 0.5, 0.8, 1] }
-    );
+  const activeSection = activeSectionIndex >= 0 ? catalog.sections[activeSectionIndex] : null;
+  
+  const totalPages = activeSection 
+    ? Math.ceil(activeSection.items.length / ITEMS_PER_PAGE) 
+    : 0;
 
-    sectionRefs.current.forEach(ref => {
-      if (ref) observer.observe(ref);
-    });
+  const currentItems = activeSection 
+    ? activeSection.items.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE)
+    : [];
 
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setDirection(1);
+      setCurrentPage(prev => prev + 1);
+    } else if (activeSectionIndex < catalog.sections.length - 1) {
+      // Go to next section
+      setDirection(1);
+      setActiveSectionIndex(prev => prev + 1);
+      setCurrentPage(0);
     }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setDirection(-1);
+      setCurrentPage(prev => prev - 1);
+    } else if (activeSectionIndex >= 0) {
+      // Go to previous section
+      setDirection(-1);
+      setActiveSectionIndex(prev => prev - 1);
+      if (activeSectionIndex - 1 >= 0) {
+        // Find last page of previous section
+        const prevSection = catalog.sections[activeSectionIndex - 1];
+        if (prevSection) {
+          setCurrentPage(Math.ceil(prevSection.items.length / ITEMS_PER_PAGE) - 1);
+        }
+      }
+    }
+  };
+
+  const goToSection = (index: number) => {
+    setDirection(index > activeSectionIndex ? 1 : -1);
+    setActiveSectionIndex(index);
+    setCurrentPage(0);
   };
 
   const handleShare = () => {
@@ -150,22 +148,52 @@ export function BookCatalog({ event }: { event: CatalogEvent }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") handleNextPage();
+      if (e.key === "ArrowLeft") handlePrevPage();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeSectionIndex, currentPage]);
+
   return (
+    // FULL SCREEN FIXED LAYOUT - NO SCROLL
     <main className="h-full w-full bg-[#00040a] text-white overflow-hidden relative flex flex-col">
+      
       {/* ══════════════════════ GLOBAL BACKGROUNDS ══════════════════════ */}
       <div className="absolute inset-0 bg-dots opacity-40 pointer-events-none" />
-      <div className="absolute inset-0 bg-diag pointer-events-none" />
-      <div className="absolute top-0 right-0 w-[40vw] h-[40vh] bg-gold/[0.04] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-[#00040a] to-transparent z-10 pointer-events-none" />
+      
+      {/* Dynamic Background Image with Blur (Changes based on section) */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeSectionIndex}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 0.15, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+          className="absolute inset-0 pointer-events-none"
+        >
+          <Image 
+            src={activeSection ? activeSection.items[0]?.image || catalog.coverImage : catalog.coverImage} 
+            alt="Background" 
+            fill 
+            className="object-cover blur-[10px]" 
+          />
+        </motion.div>
+      </AnimatePresence>
 
-      {/* ══════════════════════ ABSOLUTE HEADER ══════════════════════ */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#00040a] via-[#00040a]/80 to-[#00040a]/40 pointer-events-none" />
+
+      {/* ══════════════════════ TOP BAR ══════════════════════ */}
       <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-5">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#00040a]/90 via-[#00040a]/40 to-transparent pointer-events-none" />
-        
-        <Link href={`/empresa/${(catalog.company || 'ryan-smart-catering').toLowerCase().replace(/ /g, '-')}`} className="relative z-10 glass-btn flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-[0.2em] text-white/60 hover:text-gold transition-colors">
+        <Link href={`/empresa/${(catalog.company || 'ryan-smart-catering').toLowerCase().replace(/ /g, '-')}`} className="glass-btn flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-[0.2em] text-white/60 hover:text-gold transition-colors">
           <ArrowLeft className="w-3.5 h-3.5" /> Volver
         </Link>
 
-        <div className="relative z-10 flex gap-3">
+        <div className="flex gap-3">
           <button onClick={handleShare} className="glass-btn w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-gold transition-colors">
             {copied ? <Check className="w-4 h-4 text-green-400" /> : <Share2 className="w-4 h-4" />}
           </button>
@@ -175,148 +203,181 @@ export function BookCatalog({ event }: { event: CatalogEvent }) {
         </div>
       </header>
 
-      {/* ══════════════════════ MAIN SCROLLABLE AREA ══════════════════════ */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide relative z-10 scroll-smooth pb-32">
+      {/* ══════════════════════ MAIN CONTENT AREA ══════════════════════ */}
+      <div className="flex-1 flex flex-col md:flex-row relative z-20 h-full pt-20 pb-6 px-6 md:px-10 gap-8 md:gap-16">
         
-        {/* ── HERO COVER ── */}
-        <section className="relative w-full min-h-[60vh] md:min-h-[70vh] flex flex-col justify-end">
-          <div className="absolute inset-0">
-            <Image src={catalog.coverImage} alt="Cover" fill className="object-cover sepia-[0.15]" priority />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#00040a] via-[#00040a]/80 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00040a]/80 to-transparent" />
-          </div>
+        {/* ────── LEFT PANEL: INDEX ────── */}
+        <aside className="w-full md:w-64 flex-shrink-0 flex flex-col justify-center">
+          <div className="pl-4 border-l border-white/[0.05]">
+            <h3 className="text-[9px] uppercase tracking-[0.4em] text-gold mb-8">Índice del Catálogo</h3>
+            <nav className="flex flex-col gap-2">
+              <button
+                onClick={() => goToSection(-1)}
+                className={`text-left py-2.5 text-xs tracking-widest uppercase transition-all duration-300 relative group
+                  ${activeSectionIndex === -1 ? "text-gold font-bold" : "text-white/40 hover:text-white/80"}`}
+              >
+                {activeSectionIndex === -1 && (
+                  <motion.div layoutId="active-indicator" className="absolute -left-[17px] top-1/2 -translate-y-1/2 w-[2px] h-4 bg-gold" />
+                )}
+                Portada
+              </button>
 
-          <div className="relative z-10 px-6 md:px-16 pb-16 max-w-5xl">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="glass-btn px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.3em] text-gold">
-                Propuesta Oficial
-              </span>
-              <span className="text-white/40 text-[10px] uppercase tracking-widest">{catalog.company || "Catering Premium"}</span>
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-luxury text-white mb-6 leading-[1.1]">
-              {catalog.title}
-            </h1>
-            
-            <p className="text-white/50 md:text-lg max-w-2xl leading-relaxed mb-8 font-light">
-              {catalog.description}
-            </p>
-
-            <div className="flex flex-wrap gap-x-8 gap-y-4 text-sm">
-              {[
-                { icon: Calendar, text: catalog.date || "Fecha por definir" },
-                { icon: MapPin, text: catalog.location || "Lugar del evento" },
-                { icon: Clock, text: catalog.pax || "Invitados" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-white/60">
-                  <item.icon className="w-4 h-4 text-gold/70" />
-                  <span className="tracking-wide">{item.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── SPLIT LAYOUT (SIDEBAR + CONTENT) ── */}
-        <div className="max-w-[1600px] mx-auto px-6 md:px-16 flex flex-col lg:flex-row gap-12 lg:gap-24 relative">
-          
-          {/* LEFT SIDEBAR (Sticky Nav) */}
-          <aside className="lg:w-64 flex-shrink-0">
-            <div className="sticky top-28 hidden lg:block border-l border-white/[0.05] py-4">
-              <h3 className="text-[10px] uppercase tracking-[0.3em] text-gold mb-6 pl-6">Índice del Evento</h3>
-              <nav className="flex flex-col gap-1">
-                {catalog.sections.map((sec) => (
-                  <button
-                    key={sec.id}
-                    onClick={() => scrollToSection(sec.id)}
-                    className={`text-left px-6 py-2.5 text-xs tracking-wider transition-all duration-300 border-l-[3px]
-                      ${activeSection === sec.id 
-                        ? "border-gold text-white bg-white/[0.03] font-medium" 
-                        : "border-transparent text-white/40 hover:text-white/80 hover:bg-white/[0.01]"
-                      }`}
-                  >
-                    {sec.title}
-                  </button>
-                ))}
-              </nav>
-            </div>
-
-            {/* Mobile horizontal nav */}
-            <div className="lg:hidden flex overflow-x-auto scrollbar-hide border-b border-white/[0.05] pb-1 -mx-6 px-6 sticky top-0 bg-[#00040a]/95 backdrop-blur z-40">
-              {catalog.sections.map((sec) => (
+              {catalog.sections.map((sec, idx) => (
                 <button
                   key={sec.id}
-                  onClick={() => scrollToSection(sec.id)}
-                  className={`flex-shrink-0 px-4 py-4 text-[11px] uppercase tracking-wider transition-all border-b-2 whitespace-nowrap
-                    ${activeSection === sec.id ? "border-gold text-gold" : "border-transparent text-white/40"}`}
+                  onClick={() => goToSection(idx)}
+                  className={`text-left py-2.5 text-xs tracking-widest uppercase transition-all duration-300 relative group
+                    ${activeSectionIndex === idx ? "text-gold font-bold" : "text-white/40 hover:text-white/80"}`}
                 >
+                  {activeSectionIndex === idx && (
+                    <motion.div layoutId="active-indicator" className="absolute -left-[17px] top-1/2 -translate-y-1/2 w-[2px] h-4 bg-gold" />
+                  )}
                   {sec.title}
                 </button>
               ))}
-            </div>
-          </aside>
+            </nav>
+          </div>
+        </aside>
 
-          {/* RIGHT CONTENT (Sections & Items) */}
-          <div className="flex-1 pb-32">
-            {catalog.sections.map((section, secIdx) => (
-              <section 
-                key={section.id} 
-                id={section.id} 
-                className="mb-24 scroll-mt-32"
-                ref={el => { sectionRefs.current[secIdx] = el }}
+        {/* ────── RIGHT PANEL: THE "BOOK" PAGES ────── */}
+        <div className="flex-1 flex flex-col justify-center relative overflow-hidden">
+          
+          <AnimatePresence mode="wait" custom={direction}>
+            {activeSectionIndex === -1 ? (
+              
+              /* ── PAGE: COVER ── */
+              <motion.div
+                key="cover"
+                custom={direction}
+                initial={{ opacity: 0, x: direction * 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: direction * -50 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="w-full max-w-4xl"
               >
-                {/* Section Header */}
-                <div className="mb-10">
-                  <div className="flex items-center gap-4 mb-4">
-                    <span className="text-gold/50 font-luxury text-xl">
-                      {String(secIdx + 1).padStart(2, "0")}
-                    </span>
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-gold/30 to-transparent" />
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-luxury text-white mb-3">
-                    {section.title}
-                  </h2>
-                  <p className="text-white/40 text-sm">{section.description}</p>
+                <div className="mb-8">
+                  <span className="glass-btn px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.3em] text-gold mb-6 inline-block">
+                    Propuesta Oficial
+                  </span>
+                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-luxury text-white mb-6 leading-none">
+                    {catalog.title}
+                  </h1>
+                  <p className="text-white/50 md:text-lg max-w-2xl leading-relaxed mb-10 font-light">
+                    {catalog.description}
+                  </p>
                 </div>
 
-                {/* Items Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                  {section.items.map((item) => (
-                    <div key={item.id} className="group flex gap-5 p-4 rounded-lg hover:bg-white/[0.02] border border-transparent hover:border-white/[0.05] transition-all duration-300">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm border-t border-white/[0.05] pt-10">
+                  {[
+                    { icon: Calendar, label: "FECHA", text: catalog.date || "Por definir" },
+                    { icon: MapPin, label: "LOCACIÓN", text: catalog.location || "Por definir" },
+                    { icon: Clock, label: "ASISTENTES", text: catalog.pax || "Por definir" },
+                  ].map((item, i) => (
+                    <div key={i}>
+                      <p className="text-[9px] uppercase tracking-[0.3em] text-gold/60 mb-2">{item.label}</p>
+                      <div className="flex items-center gap-2 text-white/80">
+                        <item.icon className="w-4 h-4 text-white/20" />
+                        <span className="font-light tracking-wide">{item.text}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+            ) : activeSection ? (
+              
+              /* ── PAGE: SECTION CONTENT ── */
+              <motion.div
+                key={`${activeSection.id}-page-${currentPage}`}
+                custom={direction}
+                initial={{ opacity: 0, x: direction * 40, filter: "blur(4px)" }}
+                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, x: direction * -40, filter: "blur(4px)" }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="w-full max-w-5xl h-full flex flex-col"
+              >
+                {/* Section Header */}
+                <div className="mb-8 flex-shrink-0">
+                  <div className="flex items-center gap-4 mb-2">
+                    <span className="text-gold/50 font-luxury text-lg">
+                      {String(activeSectionIndex + 1).padStart(2, "0")}
+                    </span>
+                    <div className="h-[1px] w-12 bg-gradient-to-r from-gold/50 to-transparent" />
+                  </div>
+                  <h2 className="text-3xl md:text-5xl font-luxury text-white mb-2">
+                    {activeSection.title}
+                  </h2>
+                  <p className="text-white/40 text-sm max-w-2xl">{activeSection.description}</p>
+                </div>
+
+                {/* Items Grid (Max 4 per page to fit on screen) */}
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 content-start">
+                  {currentItems.map((item) => (
+                    <div key={item.id} className="group flex gap-5 p-4 rounded-xl hover:bg-white/[0.03] border border-transparent hover:border-white/[0.05] transition-all duration-500">
                       
                       {/* Thumbnail */}
-                      <div className="w-24 h-24 flex-shrink-0 relative rounded-md overflow-hidden bg-white/5">
+                      <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 relative rounded-lg overflow-hidden bg-white/5">
                         <Image 
                           src={item.image} 
                           alt={item.name} 
                           fill 
-                          className="object-cover sepia-[0.2] group-hover:sepia-0 group-hover:scale-110 transition-all duration-500" 
+                          className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 sepia-[0.1]" 
                         />
-                        <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-md" />
+                        <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-lg pointer-events-none" />
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 flex flex-col justify-center">
-                        <div className="flex items-start justify-between gap-2 mb-1.5">
-                          <h3 className="text-base font-luxury text-white/90 group-hover:text-gold transition-colors leading-tight">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="text-lg md:text-xl font-luxury text-white/90 group-hover:text-gold transition-colors leading-tight">
                             {item.name}
                           </h3>
-                          {item.tag && (
-                            <span className="flex-shrink-0 text-[8px] uppercase tracking-widest text-gold/60 border border-gold/20 px-1.5 py-0.5 rounded-sm">
-                              {item.tag}
-                           </span>
-                          )}
                         </div>
-                        <p className="text-xs text-white/40 leading-relaxed line-clamp-3">
+                        <p className="text-xs md:text-sm text-white/40 leading-relaxed font-light line-clamp-3">
                           {item.desc || item.description}
                         </p>
+                        {item.tag && (
+                          <div className="mt-3">
+                            <span className="text-[9px] uppercase tracking-widest text-gold border border-gold/20 px-2 py-1 rounded-sm">
+                              {item.tag}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       
                     </div>
                   ))}
                 </div>
-              </section>
-            ))}
+              </motion.div>
+
+            ) : null}
+          </AnimatePresence>
+
+          {/* ────── PAGINATION CONTROLS (Bottom Right) ────── */}
+          <div className="absolute bottom-0 right-0 flex items-center gap-4">
+            {activeSectionIndex >= 0 && (
+              <span className="text-[10px] uppercase tracking-[0.3em] text-white/30 mr-2">
+                Página {currentPage + 1} de {totalPages}
+              </span>
+            )}
+            
+            <button 
+              onClick={handlePrevPage}
+              disabled={activeSectionIndex === -1}
+              className={`glass-btn w-12 h-12 flex items-center justify-center rounded-full transition-all
+                ${activeSectionIndex === -1 ? "opacity-20 cursor-not-allowed" : "hover:text-gold hover:border-gold/40"}`}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            
+            <button 
+              onClick={handleNextPage}
+              disabled={activeSectionIndex === catalog.sections.length - 1 && currentPage === totalPages - 1}
+              className={`glass-btn w-12 h-12 flex items-center justify-center rounded-full transition-all
+                ${activeSectionIndex === catalog.sections.length - 1 && currentPage === totalPages - 1 ? "opacity-20 cursor-not-allowed" : "hover:text-gold hover:border-gold/40"}`}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
 
         </div>
