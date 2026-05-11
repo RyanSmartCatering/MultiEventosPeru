@@ -21,6 +21,7 @@ type CatalogSection = {
   title: string;
   description?: string;
   items: CatalogItem[];
+  coverImage?: string; // Specific image for the left panel for this section
 };
 
 type CatalogEvent = {
@@ -50,6 +51,7 @@ const mockCatalog: CatalogEvent = {
       id: "recepcion",
       title: "Recepción y Cóctel",
       description: "Aperitivos fríos y calientes para recibir a los invitados durante el atardecer.",
+      coverImage: "/hero.png",
       items: [
         { id: "c1", name: "Tartar de Salmón", desc: "Con palta brûlée, alcaparras y emulsión de maracuyá en galleta de sésamo.", image: "/hero.png", tag: "Frio" },
         { id: "c2", name: "Crocante de Pato", desc: "Confit de pato en masa philo con chutney de frutos rojos.", image: "/hero.png", tag: "Caliente" },
@@ -62,30 +64,33 @@ const mockCatalog: CatalogEvent = {
     {
       id: "plato-fondo",
       title: "Platos de Fondo",
-      description: "El momento central de la noche. Opciones cuidadosamente seleccionadas.",
+      description: "El momento central de la noche. Opciones cuidadosamente seleccionadas para deleitar a los paladares más exigentes.",
+      coverImage: "/hero.png",
       items: [
-        { id: "p1", name: "Asado de Tira Estofado", desc: "Cocción lenta por 48h, puré rústico de papa amarilla y vegetales glaseados.", image: "/hero.png", tag: "Carne" },
-        { id: "p2", name: "Salmón en Costra de Finas Hierbas", desc: "Sobre risotto de quinua negra y espárragos al grill.", image: "/hero.png", tag: "Pescado" },
-        { id: "p3", name: "Ravioles de Zapallo Loche", desc: "En mantequilla de salvia, almendras tostadas y queso grana padano.", image: "/hero.png", tag: "Vegetariano" },
-        { id: "p4", name: "Panceta Crujiente", desc: "Con puré de camote y reducción de chicha morada.", image: "/hero.png", tag: "Cerdo" },
+        { id: "p1", name: "Asado de Tira Estofado", desc: "Cocción lenta por 48h, puré rústico de papa amarilla y vegetales glaseados.", image: "/hero.png", tag: "Firma" },
+        { id: "p2", name: "Salmón en Costra", desc: "Sobre risotto de quinua negra y espárragos al grill.", image: "/hero.png", tag: "Mar" },
+        { id: "p3", name: "Ravioles de Zapallo Loche", desc: "En mantequilla de salvia, almendras tostadas y queso grana padano.", image: "/hero.png", tag: "Veg" },
+        { id: "p4", name: "Panceta Crujiente", desc: "Con puré de camote y reducción de chicha morada.", image: "/hero.png", tag: "Clásico" },
       ]
     },
     {
       id: "postres",
       title: "Mesa de Postres",
-      description: "Una sinfonía de dulces para coronar la cena.",
+      description: "Una sinfonía de dulces finos elaborados artesanalmente para coronar la cena.",
+      coverImage: "/hero.png",
       items: [
         { id: "d1", name: "Esfera de Chocolate", desc: "Mousse de chocolate bitter 70%, centro de frambuesa y praliné.", image: "/hero.png" },
-        { id: "d2", name: "Suspiro a la Limeña de Lúcuma", desc: "Clásico reinventado con tierra de cacao.", image: "/hero.png" },
+        { id: "d2", name: "Suspiro a la Limeña", desc: "Clásico reinventado con tierra de cacao y merengue suizo.", image: "/hero.png" },
         { id: "d3", name: "Cheesecake de Frutos Rojos", desc: "Base de galleta de almendras y coulis de frutos del bosque.", image: "/hero.png" },
         { id: "d4", name: "Macarons Surtidos", desc: "Pistacho, frambuesa, vainilla y maracuyá.", image: "/hero.png" },
-        { id: "d5", name: "Mini Tartaletas", desc: "De limón con merengue suizo flameado.", image: "/hero.png" },
+        { id: "d5", name: "Tartaleta Cítrica", desc: "De limón con merengue flameado y ralladura de lima.", image: "/hero.png" },
       ]
     }
   ]
 };
 
-const ITEMS_PER_PAGE = 4;
+// We show 5 items per text page to keep it extremely elegant and spaced out
+const ITEMS_PER_PAGE = 5;
 
 export function BookCatalog({ event }: { event?: CatalogEvent }) {
   const catalog = event || mockCatalog;
@@ -94,7 +99,7 @@ export function BookCatalog({ event }: { event?: CatalogEvent }) {
   const [activeSectionIndex, setActiveSectionIndex] = useState(-1); // -1 means "Cover"
   const [currentPage, setCurrentPage] = useState(0);
   const [copied, setCopied] = useState(false);
-  const [direction, setDirection] = useState(1);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
 
   const activeSection = activeSectionIndex >= 0 ? catalog.sections[activeSectionIndex] : null;
   
@@ -106,40 +111,34 @@ export function BookCatalog({ event }: { event?: CatalogEvent }) {
     ? activeSection.items.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE)
     : [];
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
+  const handleNext = () => {
+    if (activeSection && currentPage < totalPages - 1) {
+      // Next text page within the same section
       setDirection(1);
       setCurrentPage(prev => prev + 1);
     } else if (activeSectionIndex < catalog.sections.length - 1) {
-      // Go to next section
+      // Next section
       setDirection(1);
       setActiveSectionIndex(prev => prev + 1);
       setCurrentPage(0);
     }
   };
 
-  const handlePrevPage = () => {
+  const handlePrev = () => {
     if (currentPage > 0) {
+      // Prev text page within the same section
       setDirection(-1);
       setCurrentPage(prev => prev - 1);
     } else if (activeSectionIndex >= 0) {
-      // Go to previous section
+      // Prev section
       setDirection(-1);
-      setActiveSectionIndex(prev => prev - 1);
-      if (activeSectionIndex - 1 >= 0) {
-        // Find last page of previous section
-        const prevSection = catalog.sections[activeSectionIndex - 1];
-        if (prevSection) {
-          setCurrentPage(Math.ceil(prevSection.items.length / ITEMS_PER_PAGE) - 1);
-        }
+      const prevIndex = activeSectionIndex - 1;
+      setActiveSectionIndex(prevIndex);
+      if (prevIndex >= 0) {
+        const prevSection = catalog.sections[prevIndex];
+        setCurrentPage(Math.ceil(prevSection.items.length / ITEMS_PER_PAGE) - 1);
       }
     }
-  };
-
-  const goToSection = (index: number) => {
-    setDirection(index > activeSectionIndex ? 1 : -1);
-    setActiveSectionIndex(index);
-    setCurrentPage(0);
   };
 
   const handleShare = () => {
@@ -148,239 +147,206 @@ export function BookCatalog({ event }: { event?: CatalogEvent }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") handleNextPage();
-      if (e.key === "ArrowLeft") handlePrevPage();
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") handleNext();
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") handlePrev();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeSectionIndex, currentPage]);
 
+  // Determine current main image for the left panel
+  const currentCoverImage = activeSectionIndex === -1 
+    ? catalog.coverImage 
+    : (activeSection?.coverImage || activeSection?.items[0]?.image || catalog.coverImage);
+
   return (
     // FULL SCREEN FIXED LAYOUT - NO SCROLL
-    <main className="h-full w-full bg-[#00040a] text-white overflow-hidden relative flex flex-col">
+    <main className="h-[100dvh] w-full bg-[#00040a] text-white overflow-hidden flex flex-col md:flex-row relative">
       
-      {/* ══════════════════════ GLOBAL BACKGROUNDS ══════════════════════ */}
-      <div className="absolute inset-0 bg-dots opacity-40 pointer-events-none" />
-      <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-[#00040a] to-transparent z-10 pointer-events-none" />
-      
-      {/* Dynamic Background Image with Blur (Changes based on section) */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeSectionIndex}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 0.15, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
-          className="absolute inset-0 pointer-events-none"
-        >
-          <Image 
-            src={activeSection ? activeSection.items[0]?.image || catalog.coverImage : catalog.coverImage} 
-            alt="Background" 
-            fill 
-            className="object-cover blur-[10px]" 
-          />
-        </motion.div>
-      </AnimatePresence>
+      {/* ══════════════════════ LEFT PANEL: THE ARTWORK ══════════════════════ */}
+      <div className="w-full h-1/3 md:h-full md:w-1/2 relative flex-shrink-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentCoverImage}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+          >
+            <Image 
+              src={currentCoverImage} 
+              alt="Section Cover" 
+              fill 
+              className="object-cover" 
+              priority
+            />
+          </motion.div>
+        </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-r from-[#00040a] via-[#00040a]/80 to-[#00040a]/40 pointer-events-none" />
+        {/* Gradient overlays to blend the image perfectly into the dark background */}
+        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#00040a] via-[#00040a]/40 to-transparent" />
+        <div className="absolute inset-0 bg-black/20" />
+      </div>
 
-      {/* ══════════════════════ TOP BAR ══════════════════════ */}
-      <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-5">
-        <Link href={`/empresa/${(catalog.company || 'ryan-smart-catering').toLowerCase().replace(/ /g, '-')}`} className="glass-btn flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-[0.2em] text-white/60 hover:text-gold transition-colors">
-          <ArrowLeft className="w-3.5 h-3.5" /> Volver
-        </Link>
+      {/* ══════════════════════ RIGHT PANEL: THE EDITORIAL MENU ══════════════════════ */}
+      <div className="w-full h-2/3 md:h-full md:w-1/2 relative flex flex-col items-center justify-center bg-[#00040a] px-8 md:px-16 lg:px-24">
+        
+        {/* Subtle grid background for the right panel */}
+        <div className="absolute inset-0 bg-dots opacity-20 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-gold/20 to-transparent" />
 
-        <div className="flex gap-3">
-          <button onClick={handleShare} className="glass-btn w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-gold transition-colors">
+        {/* Top Navigation Overlay */}
+        <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-6">
+          <Link href={`/empresa/${(catalog.company || 'ryan-smart-catering').toLowerCase().replace(/ /g, '-')}`} className="text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-gold transition-colors flex items-center gap-2">
+            <ArrowLeft className="w-3 h-3" /> Atrás
+          </Link>
+          <button onClick={handleShare} className="text-white/50 hover:text-gold transition-colors">
             {copied ? <Check className="w-4 h-4 text-green-400" /> : <Share2 className="w-4 h-4" />}
           </button>
-          <button className="glass-btn w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-gold transition-colors">
-            <Download className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
+        </header>
 
-      {/* ══════════════════════ MAIN CONTENT AREA ══════════════════════ */}
-      <div className="flex-1 flex flex-col md:flex-row relative z-20 h-full pt-20 pb-6 px-6 md:px-10 gap-8 md:gap-16">
-        
-        {/* ────── LEFT PANEL: INDEX ────── */}
-        <aside className="w-full md:w-64 flex-shrink-0 flex flex-col justify-center">
-          <div className="pl-4 border-l border-white/[0.05]">
-            <h3 className="text-[9px] uppercase tracking-[0.4em] text-gold mb-8">Índice del Catálogo</h3>
-            <nav className="flex flex-col gap-2">
-              <button
-                onClick={() => goToSection(-1)}
-                className={`text-left py-2.5 text-xs tracking-widest uppercase transition-all duration-300 relative group
-                  ${activeSectionIndex === -1 ? "text-gold font-bold" : "text-white/40 hover:text-white/80"}`}
-              >
-                {activeSectionIndex === -1 && (
-                  <motion.div layoutId="active-indicator" className="absolute -left-[17px] top-1/2 -translate-y-1/2 w-[2px] h-4 bg-gold" />
-                )}
-                Portada
-              </button>
-
-              {catalog.sections.map((sec, idx) => (
-                <button
-                  key={sec.id}
-                  onClick={() => goToSection(idx)}
-                  className={`text-left py-2.5 text-xs tracking-widest uppercase transition-all duration-300 relative group
-                    ${activeSectionIndex === idx ? "text-gold font-bold" : "text-white/40 hover:text-white/80"}`}
-                >
-                  {activeSectionIndex === idx && (
-                    <motion.div layoutId="active-indicator" className="absolute -left-[17px] top-1/2 -translate-y-1/2 w-[2px] h-4 bg-gold" />
-                  )}
-                  {sec.title}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </aside>
-
-        {/* ────── RIGHT PANEL: THE "BOOK" PAGES ────── */}
-        <div className="flex-1 flex flex-col justify-center relative overflow-hidden">
-          
+        {/* Content Container */}
+        <div className="w-full max-w-xl z-10 relative">
           <AnimatePresence mode="wait" custom={direction}>
+            
             {activeSectionIndex === -1 ? (
               
-              /* ── PAGE: COVER ── */
+              /* ── PAGE 0: EDITORIAL COVER ── */
               <motion.div
                 key="cover"
                 custom={direction}
-                initial={{ opacity: 0, x: direction * 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction * -50 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full max-w-4xl"
+                initial={{ opacity: 0, y: direction * 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: direction * -30 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="flex flex-col text-center items-center"
               >
-                <div className="mb-8">
-                  <span className="glass-btn px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.3em] text-gold mb-6 inline-block">
-                    Propuesta Oficial
-                  </span>
-                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-luxury text-white mb-6 leading-none">
-                    {catalog.title}
-                  </h1>
-                  <p className="text-white/50 md:text-lg max-w-2xl leading-relaxed mb-10 font-light">
-                    {catalog.description}
-                  </p>
+                <div className="mb-4">
+                  <div className="h-12 w-[1px] bg-gold/50 mx-auto mb-4" />
+                  <span className="text-[9px] uppercase tracking-[0.4em] text-gold">Dossier Exclusivo</span>
                 </div>
+                
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-luxury text-white mb-8 leading-[1.1]">
+                  {catalog.title}
+                </h1>
+                
+                <p className="text-white/40 text-sm max-w-sm leading-relaxed font-light mb-12 italic">
+                  "{catalog.description}"
+                </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm border-t border-white/[0.05] pt-10">
-                  {[
-                    { icon: Calendar, label: "FECHA", text: catalog.date || "Por definir" },
-                    { icon: MapPin, label: "LOCACIÓN", text: catalog.location || "Por definir" },
-                    { icon: Clock, label: "ASISTENTES", text: catalog.pax || "Por definir" },
-                  ].map((item, i) => (
-                    <div key={i}>
-                      <p className="text-[9px] uppercase tracking-[0.3em] text-gold/60 mb-2">{item.label}</p>
-                      <div className="flex items-center gap-2 text-white/80">
-                        <item.icon className="w-4 h-4 text-white/20" />
-                        <span className="font-light tracking-wide">{item.text}</span>
-                      </div>
-                    </div>
-                  ))}
+                <div className="w-full grid grid-cols-3 gap-4 border-y border-white/[0.05] py-6">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[8px] uppercase tracking-widest text-gold/60 mb-1">Fecha</span>
+                    <span className="text-xs text-white/80 font-light">{catalog.date || "-"}</span>
+                  </div>
+                  <div className="flex flex-col items-center border-x border-white/[0.05]">
+                    <span className="text-[8px] uppercase tracking-widest text-gold/60 mb-1">Locación</span>
+                    <span className="text-xs text-white/80 font-light text-center px-2">{catalog.location || "-"}</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-[8px] uppercase tracking-widest text-gold/60 mb-1">Asistentes</span>
+                    <span className="text-xs text-white/80 font-light">{catalog.pax || "-"}</span>
+                  </div>
                 </div>
               </motion.div>
 
             ) : activeSection ? (
               
-              /* ── PAGE: SECTION CONTENT ── */
+              /* ── PAGES 1+: THE MENU LAYOUT ── */
               <motion.div
-                key={`${activeSection.id}-page-${currentPage}`}
+                key={`${activeSection.id}-${currentPage}`}
                 custom={direction}
-                initial={{ opacity: 0, x: direction * 40, filter: "blur(4px)" }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, x: direction * -40, filter: "blur(4px)" }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="w-full max-w-5xl h-full flex flex-col"
+                initial={{ opacity: 0, y: direction * 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: direction * -40 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                className="flex flex-col w-full"
               >
-                {/* Section Header */}
-                <div className="mb-8 flex-shrink-0">
-                  <div className="flex items-center gap-4 mb-2">
-                    <span className="text-gold/50 font-luxury text-lg">
-                      {String(activeSectionIndex + 1).padStart(2, "0")}
-                    </span>
-                    <div className="h-[1px] w-12 bg-gradient-to-r from-gold/50 to-transparent" />
-                  </div>
-                  <h2 className="text-3xl md:text-5xl font-luxury text-white mb-2">
+                {/* Minimalist Section Header */}
+                <div className="mb-10 text-center relative">
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-[10px] text-white/20 font-luxury tracking-widest">
+                    {String(activeSectionIndex + 1).padStart(2, "0")}
+                  </span>
+                  <h2 className="text-3xl md:text-4xl font-luxury text-white inline-block">
                     {activeSection.title}
                   </h2>
-                  <p className="text-white/40 text-sm max-w-2xl">{activeSection.description}</p>
                 </div>
 
-                {/* Items Grid (Max 4 per page to fit on screen) */}
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 content-start">
-                  {currentItems.map((item) => (
-                    <div key={item.id} className="group flex gap-5 p-4 rounded-xl hover:bg-white/[0.03] border border-transparent hover:border-white/[0.05] transition-all duration-500">
-                      
-                      {/* Thumbnail */}
-                      <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 relative rounded-lg overflow-hidden bg-white/5">
-                        <Image 
-                          src={item.image} 
-                          alt={item.name} 
-                          fill 
-                          className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 sepia-[0.1]" 
-                        />
-                        <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-lg pointer-events-none" />
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 flex flex-col justify-center">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="text-lg md:text-xl font-luxury text-white/90 group-hover:text-gold transition-colors leading-tight">
-                            {item.name}
-                          </h3>
-                        </div>
-                        <p className="text-xs md:text-sm text-white/40 leading-relaxed font-light line-clamp-3">
-                          {item.desc || item.description}
-                        </p>
+                {/* The Fine-Dining Menu List */}
+                <div className="flex flex-col gap-6 md:gap-8">
+                  {currentItems.map((item, idx) => (
+                    <motion.div 
+                      key={item.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: idx * 0.1, ease: "easeOut" }}
+                      className="group"
+                    >
+                      {/* Name and Tag row */}
+                      <div className="flex items-end justify-between w-full mb-1 gap-4">
+                        <h3 className="text-base md:text-lg font-luxury text-white/90 group-hover:text-gold transition-colors whitespace-nowrap">
+                          {item.name}
+                        </h3>
+                        
+                        {/* The dotted leader line */}
+                        <div className="flex-1 border-b border-dotted border-white/20 mb-[6px] opacity-30 group-hover:opacity-60 transition-opacity" />
+                        
                         {item.tag && (
-                          <div className="mt-3">
-                            <span className="text-[9px] uppercase tracking-widest text-gold border border-gold/20 px-2 py-1 rounded-sm">
-                              {item.tag}
-                            </span>
-                          </div>
+                          <span className="text-[8px] uppercase tracking-widest text-gold whitespace-nowrap">
+                            {item.tag}
+                          </span>
                         )}
                       </div>
                       
-                    </div>
+                      {/* Description (Italic, soft) */}
+                      <p className="text-xs text-white/40 font-light leading-relaxed italic w-5/6">
+                        {item.desc || item.description}
+                      </p>
+                    </motion.div>
                   ))}
                 </div>
-              </motion.div>
 
+              </motion.div>
             ) : null}
           </AnimatePresence>
-
-          {/* ────── PAGINATION CONTROLS (Bottom Right) ────── */}
-          <div className="absolute bottom-0 right-0 flex items-center gap-4">
-            {activeSectionIndex >= 0 && (
-              <span className="text-[10px] uppercase tracking-[0.3em] text-white/30 mr-2">
-                Página {currentPage + 1} de {totalPages}
-              </span>
-            )}
-            
-            <button 
-              onClick={handlePrevPage}
-              disabled={activeSectionIndex === -1}
-              className={`glass-btn w-12 h-12 flex items-center justify-center rounded-full transition-all
-                ${activeSectionIndex === -1 ? "opacity-20 cursor-not-allowed" : "hover:text-gold hover:border-gold/40"}`}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            
-            <button 
-              onClick={handleNextPage}
-              disabled={activeSectionIndex === catalog.sections.length - 1 && currentPage === totalPages - 1}
-              className={`glass-btn w-12 h-12 flex items-center justify-center rounded-full transition-all
-                ${activeSectionIndex === catalog.sections.length - 1 && currentPage === totalPages - 1 ? "opacity-20 cursor-not-allowed" : "hover:text-gold hover:border-gold/40"}`}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-
         </div>
+
+        {/* ══════════════════════ BOTTOM PAGINATION ══════════════════════ */}
+        <div className="absolute bottom-8 left-0 right-0 px-8 flex items-center justify-between">
+          <button 
+            onClick={handlePrev}
+            disabled={activeSectionIndex === -1}
+            className={`flex items-center gap-2 text-[9px] uppercase tracking-[0.3em] transition-all
+              ${activeSectionIndex === -1 ? "text-white/10 cursor-not-allowed" : "text-white/40 hover:text-gold"}`}
+          >
+            <ChevronLeft className="w-3 h-3" /> Anterior
+          </button>
+
+          {/* Minimal dots for section progress */}
+          {activeSection && (
+            <div className="flex gap-1.5 items-center">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <div 
+                  key={i} 
+                  className={`h-1 transition-all duration-500 rounded-full ${i === currentPage ? "w-4 bg-gold" : "w-1 bg-white/20"}`}
+                />
+              ))}
+            </div>
+          )}
+
+          <button 
+            onClick={handleNext}
+            disabled={activeSectionIndex === catalog.sections.length - 1 && currentPage === totalPages - 1}
+            className={`flex items-center gap-2 text-[9px] uppercase tracking-[0.3em] transition-all
+              ${activeSectionIndex === catalog.sections.length - 1 && currentPage === totalPages - 1 ? "text-white/10 cursor-not-allowed" : "text-white/40 hover:text-gold"}`}
+          >
+            Siguiente <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+
       </div>
     </main>
   );
