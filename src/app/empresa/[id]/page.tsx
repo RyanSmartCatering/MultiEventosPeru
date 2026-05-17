@@ -18,7 +18,7 @@ const mockCompany = {
   since: "2019",
   location: "Lima, Perú",
   catalogs: [
-    { id: "gala-verano-2026",   title: "Gala de Verano 2026",       image: "/hero.png", type: "Corporativo", items: 8  },
+    { id: "bodas-plata-sandra-del-pozo", title: "Bodas de Plata Sandra",   image: "/hero.png", type: "Bodas", items: 50  },
     { id: "boda-civil-vip",     title: "Boda Civil VIP",            image: "/hero.png", type: "Bodas",       items: 12 },
     { id: "quinceanero-oro",    title: "Quinceañero de Oro",        image: "/hero.png", type: "Sociales",    items: 10 },
     { id: "lunch-ejecutivo",    title: "Lunch Ejecutivo Premium",   image: "/hero.png", type: "Corporativo", items: 6  },
@@ -110,7 +110,7 @@ export default function EmpresaPage() {
                 <span className="text-xs text-white/40 ml-1">{company.rating} · {company.reviews} reseñas</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-luxury text-white/90 leading-tight">{company.name}</h1>
-              <p className="text-white/35 italic text-sm mt-2">"{company.tagline}"</p>
+              <p className="text-white/35 italic text-sm mt-2">&ldquo;{company.tagline}&rdquo;</p>
             </div>
           </div>
         </div>

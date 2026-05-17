@@ -12,10 +12,11 @@ export function UserNav() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
   const router = useRouter();
 
   useEffect(() => {
+    const supabase = supabaseRef.current;
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -37,7 +38,7 @@ export function UserNav() {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await supabaseRef.current.auth.signOut();
     setOpen(false);
     router.push("/");
     router.refresh();
