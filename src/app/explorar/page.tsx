@@ -3,176 +3,180 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, SlidersHorizontal, MapPin } from "lucide-react";
+import { Search, MapPin, Star, ChevronRight } from "lucide-react";
 import { UserNav } from "@/components/UserNav";
 
-const LIMA_DISTRICTS = [
-  "Todos","Miraflores","San Isidro","Surco","La Molina",
-  "San Borja","Barranco","Jesús María","San Miguel","Pueblo Libre",
-  "Lince","Magdalena","Chorrillos","Surquillo",
+const CATEGORIES = [
+  { label: "Todos", value: "todos" },
+  { label: "Bodas", value: "bodas" },
+  { label: "Gala & Corp.", value: "corporativo" },
+  { label: "Quinceañeros", value: "quincea" },
+  { label: "Comida", value: "comida" },
+  { label: "Nocturnos", value: "nocturnos" },
 ];
 
 const companies = [
-  { id:"ryan-smart-catering",  name:"Ryan Smart Catering",  rating:"5.0", category:"Gala & Corporativo",  logo:"RS", tag:"Verificado", district:"Miraflores", image:"/hero.png" },
-  { id:"elite-events",         name:"Elite Events Perú",    rating:"4.9", category:"Bodas de Lujo",        logo:"EE", tag:"Premium",    district:"San Isidro",  image:"/hero.png" },
-  { id:"gourmet-peru",         name:"Gourmet Perú",         rating:"4.8", category:"Comida Fusión",        logo:"GP", tag:"Nuevo",      district:"Surco",        image:"/hero.png" },
-  { id:"midnight-banquets",    name:"Midnight Banquets",    rating:"4.9", category:"Eventos Nocturnos",    logo:"MB",                  district:"La Molina",    image:"/hero.png" },
-  { id:"la-gala-catering",     name:"La Gala Catering",     rating:"4.7", category:"Quinceañeros",         logo:"LG",                  district:"San Borja",    image:"/hero.png" },
-  { id:"sabores-andinos",      name:"Sabores Andinos",      rating:"4.8", category:"Comida Peruana",       logo:"SA", tag:"Artesanal",  district:"Barranco",     image:"/hero.png" },
-  { id:"prestige-events",      name:"Prestige Events",      rating:"4.6", category:"Eventos Sociales",     logo:"PE",                  district:"Jesús María",  image:"/hero.png" },
-  { id:"golden-banquet",       name:"Golden Banquet",       rating:"4.9", category:"Bodas & Gala",         logo:"GB", tag:"Top",        district:"San Miguel",   image:"/hero.png" },
+  { id: "ryan-smart-catering",   name: "Ryan Smart Catering",   rating: 5.0, category: "Gala & Corporativo",   cat: "corporativo", logo: "RS", tag: "Verificado", district: "Miraflores",  image: "/hero.png", catalogs: 4  },
+  { id: "elite-events",          name: "Elite Events Perú",     rating: 4.9, category: "Bodas de Lujo",         cat: "bodas",       logo: "EE", tag: "Premium",    district: "San Isidro",   image: "/hero.png", catalogs: 7  },
+  { id: "gourmet-peru",          name: "Gourmet Perú",          rating: 4.8, category: "Comida Fusión",         cat: "comida",      logo: "GP", tag: "Nuevo",      district: "Surco",         image: "/hero.png", catalogs: 3  },
+  { id: "midnight-banquets",     name: "Midnight Banquets",     rating: 4.9, category: "Eventos Nocturnos",     cat: "nocturnos",   logo: "MB",                    district: "La Molina",     image: "/hero.png", catalogs: 5  },
+  { id: "la-gala-catering",      name: "La Gala Catering",      rating: 4.7, category: "Quinceañeros",          cat: "quincea",     logo: "LG",                    district: "San Borja",     image: "/hero.png", catalogs: 6  },
+  { id: "sabores-andinos",       name: "Sabores Andinos",       rating: 4.8, category: "Comida Peruana",        cat: "comida",      logo: "SA", tag: "Artesanal",  district: "Barranco",      image: "/hero.png", catalogs: 4  },
+  { id: "prestige-events",       name: "Prestige Events",       rating: 4.6, category: "Eventos Sociales",      cat: "bodas",       logo: "PE",                    district: "Jesús María",   image: "/hero.png", catalogs: 8  },
+  { id: "golden-banquet",        name: "Golden Banquet",        rating: 4.9, category: "Bodas & Gala",          cat: "bodas",       logo: "GB", tag: "Top",        district: "San Miguel",    image: "/hero.png", catalogs: 5  },
+  { id: "luxe-moments",          name: "Luxe Moments",          rating: 4.7, category: "Bodas de Lujo",         cat: "bodas",       logo: "LM", tag: "Exclusivo",  district: "Miraflores",   image: "/hero.png", catalogs: 3  },
+  { id: "fiesta-imperial",       name: "Fiesta Imperial",       rating: 4.5, category: "Gala & Corporativo",   cat: "corporativo", logo: "FI",                    district: "San Isidro",    image: "/hero.png", catalogs: 6  },
+  { id: "dulces-momentos",       name: "Dulces Momentos",       rating: 4.6, category: "Quinceañeros",          cat: "quincea",     logo: "DM",                    district: "Lince",         image: "/hero.png", catalogs: 4  },
+  { id: "alta-cocina-peru",      name: "Alta Cocina Perú",      rating: 4.9, category: "Comida Fusión",         cat: "comida",      logo: "AC", tag: "Chef Award", district: "Barranco",      image: "/hero.png", catalogs: 9  },
 ];
 
 export default function ExplorarPage() {
-  const [selectedDistrict, setSelectedDistrict] = useState("Todos");
+  const [activeCat, setActiveCat] = useState("todos");
   const [search, setSearch] = useState("");
-  const [filterOpen, setFilterOpen] = useState(false);
 
   const filtered = companies.filter((c) => {
-    const matchDistrict = selectedDistrict === "Todos" || c.district === selectedDistrict;
+    const matchCat = activeCat === "todos" || c.cat === activeCat;
     const matchSearch =
       !search ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.category.toLowerCase().includes(search.toLowerCase()) ||
       c.district.toLowerCase().includes(search.toLowerCase());
-    return matchDistrict && matchSearch;
+    return matchCat && matchSearch;
   });
 
   return (
-    <main className="h-full w-full bg-background text-white relative overflow-hidden">
+    <main className="h-[100dvh] w-full bg-[#00050f] text-white overflow-hidden flex flex-col relative">
 
-      {/* ── Rich luxury background ── */}
+      {/* Background decorations */}
       <div className="bg-dots" />
-      <div className="bg-diag" />
-      <div className="bg-vline-left" />
-      <div className="bg-vline-right" />
       <div className="bg-orb-tl" />
       <div className="bg-orb-br" />
-      <div className="bg-orb-center" />
       <div className="bg-line-top" />
-      <div className="bg-line-bottom" />
       <div className="bg-corner-tl" />
       <div className="bg-corner-tr" />
-      <div className="bg-diamond" style={{ top: "30%", left: "6%", animationDelay: "1s" }} />
-      <div className="bg-diamond" style={{ top: "70%", right: "6%", animationDelay: "3s" }} />
 
-      {/* ══════ NAV — transparente, flota encima ══════ */}
-      <nav className="absolute top-0 left-0 right-0 z-50 px-6 md:px-10 py-5 flex justify-between items-center">
-        <Link href="/" className="text-xl md:text-2xl font-luxury gold-gradient font-bold tracking-tighter hover:opacity-80 transition-opacity">
+      {/* ── NAV ── */}
+      <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05]">
+        <Link href="/" className="text-xl font-luxury gold-gradient font-bold tracking-tighter hover:opacity-80 transition-opacity">
           MULTIEVENTS
         </Link>
-        <UserNav />
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gold/40 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar empresa..."
+              className="bg-white/[0.04] border border-white/[0.08] rounded-full py-2 pl-9 pr-4 text-xs focus:outline-none focus:border-gold/40 transition-all text-white placeholder-white/25 w-52"
+            />
+          </div>
+          <UserNav />
+        </div>
       </nav>
 
-      {/* ══════ SCROLLABLE BODY (nav flota encima, pt compensa su altura) ══════ */}
-      <div className="h-full overflow-y-auto scrollbar-hide">
-      {/* ══════ HEADER ══════ */}
-      <div className="relative z-10 px-6 md:px-10 pt-24 pb-5">
-        <div className="max-w-[1600px] mx-auto">
-          <p className="text-[9px] uppercase tracking-[0.55em] text-gold/50 mb-4 flex items-center gap-3">
-            <span className="w-8 h-[1px] bg-gold/30" />
-            Directorio de Catering
-            <span className="w-8 h-[1px] bg-gold/30" />
-          </p>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-            <h1 className="text-4xl md:text-6xl font-luxury tracking-tighter leading-[1.05]">
-              Descubre la{" "}
-              <span className="gold-shimmer italic">Excelencia</span>
-            </h1>
-            <p className="text-white/30 font-light text-sm max-w-xs leading-relaxed hidden md:block">
-              Los mejores catálogos de catering y eventos premium de Lima.
-            </p>
-          </div>
+      {/* ── BODY: Sidebar + Grid ── */}
+      <div className="relative z-10 flex flex-1 overflow-hidden">
 
-          {/* ── Search & filter bar ── */}
-          <div className="flex flex-col gap-3">
-            <div className="flex gap-3">
-              <div className="relative flex-1 max-w-2xl">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/30 pointer-events-none" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar empresa o tipo de evento..."
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-full py-3 pl-12 pr-5 text-sm focus:outline-none focus:border-gold/40 focus:bg-white/[0.07] transition-all text-white placeholder-white/20"
-                />
-              </div>
-              <button
-                onClick={() => setFilterOpen(!filterOpen)}
-                className={`glass-btn flex items-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] transition-all duration-300 ${filterOpen ? "border-gold/50 text-gold bg-gold/10" : "text-white/50"}`}
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span className="hidden sm:block">Filtrar</span>
-              </button>
+        {/* SIDEBAR — filtros */}
+        <aside className="hidden md:flex flex-col flex-none w-48 border-r border-white/[0.05] px-4 py-6 gap-1">
+          <p className="text-[9px] uppercase tracking-[0.4em] text-gold/40 mb-4 px-2">Categorías</p>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setActiveCat(cat.value)}
+              className={`text-left px-3 py-2.5 rounded-lg text-xs tracking-wide transition-all duration-200 ${
+                activeCat === cat.value
+                  ? "bg-gold/15 border border-gold/30 text-gold font-semibold"
+                  : "text-white/40 hover:text-white hover:bg-white/[0.04] border border-transparent"
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+
+          <div className="mt-auto pt-6 border-t border-white/[0.05]">
+            <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 mb-2 px-2">Empresas</p>
+            <p className="text-2xl font-luxury text-gold px-2">{filtered.length}</p>
+            <p className="text-[9px] text-white/20 px-2">encontradas</p>
+          </div>
+        </aside>
+
+        {/* MAIN GRID */}
+        <div className="flex-1 overflow-hidden flex flex-col px-5 py-5 gap-4">
+
+          {/* Header line */}
+          <div className="flex-none flex items-center justify-between">
+            <div>
+              <p className="text-[9px] uppercase tracking-[0.5em] text-gold/40 mb-1">Directorio de Catering</p>
+              <h1 className="text-2xl font-luxury tracking-tight">
+                Descubre la <span className="gold-shimmer italic">Excelencia</span>
+              </h1>
             </div>
-
-            {filterOpen && (
-              <div className="overflow-x-auto scrollbar-hide pb-1">
-                <div className="flex gap-2 w-max">
-                  {LIMA_DISTRICTS.map((district) => (
-                    <button
-                      key={district}
-                      onClick={() => setSelectedDistrict(district)}
-                      className={`px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 ${
-                        selectedDistrict === district
-                          ? "bg-gold text-black font-bold shadow-[0_0_20px_rgba(255,195,0,0.3)]"
-                          : "glass-btn text-white/50 hover:text-gold"
-                      }`}
-                    >
-                      {district}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <p className="text-[9px] uppercase tracking-[0.35em] text-white/20">
-              {filtered.length} empresa{filtered.length !== 1 ? "s" : ""} encontrada{filtered.length !== 1 ? "s" : ""}
-            </p>
+            {/* Mobile category pills */}
+            <div className="md:hidden flex gap-2 overflow-x-auto scrollbar-hide">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  onClick={() => setActiveCat(cat.value)}
+                  className={`px-3 py-1 rounded-full text-[9px] uppercase tracking-wider whitespace-nowrap transition-all ${
+                    activeCat === cat.value ? "bg-gold text-black font-bold" : "glass-btn text-white/40"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* ══════ GRID ══════ */}
-      <div className="relative z-10 px-6 md:px-10 pb-12">
-        <div className="max-w-[1600px] mx-auto">
+          {/* Grid — auto-fill cards para llenar el espacio disponible */}
           {filtered.length === 0 ? (
-            <div className="text-center py-24 text-white/20">
-              <p className="text-3xl font-luxury mb-3">Sin resultados</p>
-              <p className="text-sm">Prueba con otro distrito o término de búsqueda.</p>
+            <div className="flex-1 flex items-center justify-center text-white/20">
+              <p className="text-xl font-luxury">Sin resultados</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex-1 grid gap-3"
+              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gridAutoRows: "1fr", alignContent: "start" }}>
               {filtered.map((company) => (
-                <Link key={company.id} href={`/empresa/${company.id}`} className="group block">
-                  <div className="relative overflow-hidden rounded-sm bg-white/[0.03] border border-white/[0.06] group-hover:border-gold/30 group-hover:bg-white/[0.05] transition-all duration-500 group-hover:shadow-[0_0_40px_rgba(255,195,0,0.07)]">
-                    <div className="relative h-44 w-full overflow-hidden">
-                      <Image src={company.image} alt={company.name} fill className="object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700 sepia-[0.2]" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#000814] via-[#000814]/30 to-transparent" />
-                      <div className="absolute top-3 right-3 glass-btn px-2.5 py-1 rounded-full flex items-center gap-1">
-                        <span className="text-gold text-[10px]">★</span>
-                        <span className="text-[10px] font-semibold">{company.rating}</span>
-                      </div>
+                <Link key={company.id} href={`/empresa/${company.id}`} className="group block min-h-0">
+                  <div className="h-full relative overflow-hidden rounded-xl bg-white/[0.03] border border-white/[0.07] group-hover:border-gold/40 transition-all duration-400 group-hover:shadow-[0_0_30px_rgba(255,195,0,0.1)] flex flex-col">
+
+                    {/* Image */}
+                    <div className="relative flex-1 overflow-hidden min-h-[90px]">
+                      <Image src={company.image} alt={company.name} fill className="object-cover opacity-35 group-hover:opacity-55 group-hover:scale-105 transition-all duration-600" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#00050f] via-[#00050f]/20 to-transparent" />
+
+                      {/* Tag */}
                       {company.tag && (
-                        <div className="absolute top-3 left-3 border border-gold/25 bg-gold/10 px-2.5 py-1 rounded-full">
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full border border-gold/30 bg-gold/10">
                           <span className="text-[8px] uppercase tracking-[0.2em] text-gold">{company.tag}</span>
                         </div>
                       )}
+
+                      {/* Rating */}
+                      <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                        <Star className="w-2.5 h-2.5 text-gold fill-gold" />
+                        <span className="text-[10px] font-semibold">{company.rating}</span>
+                      </div>
+
+                      {/* Logo flotante */}
+                      <div className="absolute -bottom-4 left-3 w-8 h-8 bg-[#00050f] rounded-full border border-gold/25 flex items-center justify-center z-10">
+                        <span className="text-[9px] font-luxury text-gold">{company.logo}</span>
+                      </div>
                     </div>
 
-                    <div className="p-4 relative">
-                      {/* Floating logo */}
-                      <div className="absolute -top-6 right-4 w-12 h-12 bg-[#000814] rounded-full border border-gold/20 flex items-center justify-center shadow-xl">
-                        <span className="text-xs font-luxury text-gold">{company.logo}</span>
+                    {/* Info */}
+                    <div className="pt-5 pb-3 px-3">
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <MapPin className="w-2 h-2 text-gold/30" />
+                        <span className="text-[8px] text-white/25 uppercase tracking-wider">{company.district}</span>
                       </div>
-
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <MapPin className="w-2.5 h-2.5 text-gold/40" />
-                        <span className="text-[9px] uppercase tracking-[0.25em] text-white/30">{company.district}</span>
+                      <p className="text-[8px] uppercase tracking-[0.2em] text-gold/50 mb-0.5">{company.category}</p>
+                      <h3 className="text-sm font-luxury text-white/85 group-hover:text-gold transition-colors leading-tight mb-1">{company.name}</h3>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[8px] text-white/20">{company.catalogs} catálogos</span>
+                        <ChevronRight className="w-3 h-3 text-gold/0 group-hover:text-gold/60 transition-all -translate-x-1 group-hover:translate-x-0" />
                       </div>
-                      <p className="text-[9px] uppercase tracking-[0.25em] text-gold/50 mb-1">{company.category}</p>
-                      <h3 className="text-lg font-luxury text-white/85 group-hover:text-gold transition-colors duration-300 leading-tight">{company.name}</h3>
-                      <div className="mt-3 w-5 h-[1px] bg-gold/25 group-hover:w-12 transition-all duration-500" />
                     </div>
                   </div>
                 </Link>
@@ -181,7 +185,6 @@ export default function ExplorarPage() {
           )}
         </div>
       </div>
-      </div>{/* end scrollable */}
     </main>
   );
 }
