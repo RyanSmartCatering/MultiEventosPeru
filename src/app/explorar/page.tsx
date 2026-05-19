@@ -136,12 +136,12 @@ export default function ExplorarPage() {
   return (
     <main className="h-[100dvh] w-full bg-[#000511] text-white overflow-hidden flex flex-col relative">
       {/* Fondo inmersivo Premium: Noche y Oro Verdadero */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')] bg-cover bg-center opacity-30" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-transparent via-[#000511]/80 to-[#00020a] z-0" />
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')] bg-cover bg-center opacity-50" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-transparent via-[#000511]/70 to-[#000105] z-0" />
       
-      {/* Nebulosas doradas puras */}
-      <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-yellow-500/10 blur-[150px] rounded-full" />
-      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-yellow-600/10 blur-[150px] rounded-full" />
+      {/* Nebulosas doradas puras (Alta Saturacion) */}
+      <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#FFB800]/20 blur-[150px] rounded-full" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#FFD700]/20 blur-[150px] rounded-full" />
 
       {/* ── TOP NAV TRANSPARENTE ── */}
       <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/5 bg-transparent backdrop-blur-md">
@@ -283,23 +283,22 @@ export default function ExplorarPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.4 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full"
-                  style={{ gridTemplateRows: 'repeat(2, minmax(0, 1fr))' }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[340px]"
                 >
                   {paginated.map((company) => (
                     <Link key={company.id} href={`/empresa/${company.id}`} className="group block h-full">
                       <div className={`h-full relative overflow-hidden rounded-2xl bg-[#050B14]/80 backdrop-blur-xl border transition-all duration-500 flex flex-col group-hover:-translate-y-1 ${
-                        company.id === featuredCompany.id ? "border-yellow-500/60 shadow-[0_0_20px_rgba(234,179,8,0.2)]" : "border-white/5 group-hover:border-yellow-500/30 group-hover:shadow-[0_0_30px_rgba(234,179,8,0.1)]"
+                        company.id === featuredCompany.id ? "border-[#FFB800]/80 shadow-[0_0_20px_rgba(255,184,0,0.3)]" : "border-white/10 group-hover:border-[#FFB800]/50 group-hover:shadow-[0_0_30px_rgba(255,184,0,0.2)]"
                       }`}>
                         
                         {/* Cover Image */}
                         <div className="relative h-[50%] flex-none overflow-hidden">
-                          <Image src={company.image} alt={company.name} fill className="object-cover opacity-60 group-hover:opacity-90 group-hover:scale-110 transition-all duration-700" />
+                          <Image src={company.image} alt={company.name} fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#050B14] via-[#050B14]/40 to-transparent" />
                           
-                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md border border-yellow-500/20 px-2 py-1 rounded-full">
-                            <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" />
-                            <span className="text-[10px] font-semibold text-white">{company.rating}</span>
+                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/80 backdrop-blur-md border border-[#FFD700]/40 px-2 py-1 rounded-full">
+                            <Star className="w-2.5 h-2.5 text-[#FFD700] fill-[#FFD700]" />
+                            <span className="text-[10px] font-bold text-white">{company.rating}</span>
                           </div>
                           
                           {company.tag && (
@@ -312,32 +311,32 @@ export default function ExplorarPage() {
                         {/* Content */}
                         <div className="flex-1 flex flex-col justify-between p-5 relative z-10">
                           {/* Logo Avatar overlapping cover */}
-                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#020617] rounded-xl border border-yellow-500/40 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.15)] transform group-hover:rotate-6 transition-transform duration-500">
-                            <span className="text-xs font-luxury text-yellow-400">{company.logo}</span>
+                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#020617] rounded-xl border border-[#FFD700]/60 flex items-center justify-center shadow-[0_0_15px_rgba(255,215,0,0.2)] transform group-hover:rotate-6 transition-transform duration-500">
+                            <span className="text-xs font-luxury text-[#FFD700]">{company.logo}</span>
                           </div>
 
                           <div className="pt-6">
-                            <h3 className="text-lg font-luxury text-white/90 group-hover:text-yellow-400 transition-colors leading-tight mb-2">{company.name}</h3>
+                            <h3 className="text-lg font-luxury text-white group-hover:text-[#FFD700] transition-colors leading-tight mb-2">{company.name}</h3>
                             
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               {/* Mostramos los tipos de catálogos que ofrece esta empresa */}
                               {Array.from(new Set(company.catalogos.map(cat => cat.tipo_evento))).map((tipo, idx) => (
-                                <span key={idx} className="text-[7px] px-2 py-0.5 rounded-full border border-yellow-500/30 uppercase tracking-widest text-yellow-500/80 bg-yellow-900/10">
+                                <span key={idx} className="text-[7px] px-2 py-0.5 rounded-full border border-[#FFB800]/50 uppercase tracking-widest text-[#FFB800] bg-[#FFB800]/10 font-bold">
                                   {tipo}
                                 </span>
                               ))}
                             </div>
                             
-                            <div className="flex items-center gap-1.5 text-white/40 group-hover:text-white/60 transition-colors">
-                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <div className="flex items-center gap-1.5 text-white/60 group-hover:text-white transition-colors">
+                              <MapPin className="w-3 h-3 flex-shrink-0 text-[#FFD700]/70" />
                               <span className="text-[10px] tracking-wide truncate">{company.district}</span>
                             </div>
                           </div>
 
                           <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between">
-                            <span className="text-[9px] text-white/30 uppercase tracking-[0.2em]">{company.catalogos.length} catálogos en total</span>
-                            <div className="w-6 h-6 rounded-full border border-yellow-500/0 group-hover:border-yellow-500/40 flex items-center justify-center group-hover:bg-yellow-500/10 transition-all duration-300">
-                              <ChevronRight className="w-3 h-3 text-yellow-500/0 group-hover:text-yellow-400 transition-colors" />
+                            <span className="text-[9px] text-white/50 uppercase tracking-[0.2em] font-semibold">{company.catalogos.length} catálogos en total</span>
+                            <div className="w-6 h-6 rounded-full border border-yellow-500/0 group-hover:border-[#FFD700]/60 flex items-center justify-center group-hover:bg-[#FFD700]/20 transition-all duration-300">
+                              <ChevronRight className="w-3 h-3 text-yellow-500/0 group-hover:text-[#FFD700] transition-colors" />
                             </div>
                           </div>
                         </div>
