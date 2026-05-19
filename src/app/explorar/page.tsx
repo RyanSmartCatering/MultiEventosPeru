@@ -93,12 +93,12 @@ const companies = baseCompanies.map((c, i) => {
 
 const getBadgeClasses = (tag: string) => {
   const lower = tag.toLowerCase();
-  if (lower === "verificado") return "text-emerald-300 border-emerald-400/40 bg-emerald-400/10 shadow-[0_0_10px_rgba(52,211,153,0.1)]";
-  if (lower === "premium" || lower === "top" || lower === "exclusivo") return "text-yellow-300 border-yellow-400/50 bg-yellow-400/15 shadow-[0_0_15px_rgba(250,204,21,0.15)]";
-  if (lower === "nuevo") return "text-indigo-300 border-indigo-400/40 bg-indigo-400/10 shadow-[0_0_10px_rgba(129,140,248,0.1)]";
-  if (lower === "artesanal") return "text-orange-300 border-orange-400/40 bg-orange-400/10 shadow-[0_0_10px_rgba(251,146,60,0.1)]";
-  if (lower === "chef award") return "text-rose-300 border-rose-400/40 bg-rose-400/10 shadow-[0_0_10px_rgba(251,113,133,0.1)]";
-  return "text-gold border-gold/30 bg-gold/15"; // fallback
+  if (lower === "verificado") return "text-emerald-300 border-amber-500/50 bg-emerald-950/80 shadow-[0_0_15px_rgba(52,211,153,0.2)]";
+  if (lower === "nuevo") return "text-blue-300 border-amber-500/50 bg-blue-950/80 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
+  if (lower === "premium" || lower === "top" || lower === "exclusivo") return "text-amber-300 border-amber-400/60 bg-amber-950/80 shadow-[0_0_20px_rgba(245,158,11,0.25)]";
+  if (lower === "artesanal") return "text-orange-300 border-orange-500/50 bg-orange-950/80 shadow-[0_0_15px_rgba(251,146,60,0.2)]";
+  if (lower === "chef award") return "text-rose-300 border-rose-500/50 bg-rose-950/80 shadow-[0_0_15px_rgba(244,63,94,0.2)]";
+  return "text-amber-200 border-amber-600/40 bg-amber-950/60"; // fallback
 };
 
 
@@ -134,15 +134,20 @@ export default function ExplorarPage() {
   const featuredCompany = companies[0]; // Ryan Smart Catering como destacado
 
   return (
-    <main className="h-[100dvh] w-full bg-[#00050f] text-white overflow-hidden flex flex-col relative">
-      {/* Fondo inmersivo */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold/5 via-[#00050f] to-[#00050f] z-0" />
-      <div className="bg-dots opacity-30" />
-      <div className="bg-orb-tl opacity-20" />
-      <div className="bg-orb-br opacity-20" />
+    <main className="h-[100dvh] w-full bg-[#080402] text-white overflow-hidden flex flex-col relative">
+      {/* Fondo inmersivo Golden Hour Luxury */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/20 via-[#0a0500] to-[#050200] z-0" />
+      
+      {/* Textura sutil y blurs ámbar/bronce */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-700/10 blur-[150px] rounded-full animate-pulse" style={{ animationDuration: '12s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-amber-800/5 blur-[100px] rounded-full" />
+      
+      {/* Líneas Art Déco sutiles */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(245,158,11,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(245,158,11,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] z-0" />
 
       {/* ── TOP NAV ── */}
-      <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05] bg-[#00050f]/80 backdrop-blur-md">
+      <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-amber-500/10 bg-[#080402]/80 backdrop-blur-md">
         <Link href="/" className="text-xl font-luxury gold-gradient font-bold tracking-tighter hover:opacity-80 transition-opacity">
           MULTIEVENTS
         </Link>
@@ -154,7 +159,7 @@ export default function ExplorarPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar por nombre o distrito..."
-              className="bg-white/[0.04] border border-white/[0.08] rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-gold/50 focus:shadow-[0_0_15px_rgba(255,195,0,0.15)] transition-all duration-300 text-white placeholder-white/50 w-72"
+              className="bg-white/[0.04] border border-amber-500/20 rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-amber-500/60 focus:shadow-[0_0_20px_rgba(245,158,11,0.25)] transition-all duration-300 text-white placeholder-white/50 w-72"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
@@ -171,7 +176,7 @@ export default function ExplorarPage() {
       <div className="relative z-10 flex-1 flex overflow-hidden">
         
         {/* ══ PANEL IZQUIERDO: Panel de Control (Fixed Width) ══ */}
-        <aside className="hidden md:flex flex-col w-[340px] border-r border-white/[0.05] bg-[#00050f]/60 backdrop-blur-xl p-6 flex-none">
+        <aside className="hidden md:flex flex-col w-[340px] border-r border-amber-500/10 bg-[#080402]/60 backdrop-blur-xl p-6 flex-none">
           
           <div className="mb-8">
             <p className="text-[9px] uppercase tracking-[0.4em] text-gold mb-2 flex items-center gap-2">
@@ -198,12 +203,12 @@ export default function ExplorarPage() {
                     onClick={() => setActiveFilter(f)}
                     className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border ${
                       isActive 
-                        ? "bg-gold/10 border-gold/40 text-gold shadow-[0_0_20px_rgba(255,195,0,0.1)]" 
+                        ? "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.15)]" 
                         : "bg-white/[0.02] border-transparent text-white/50 hover:bg-white/[0.05] hover:text-white"
                     }`}
                   >
                     <span className="text-xs tracking-wide">{f}</span>
-                    <span className={`text-[10px] font-mono ${isActive ? "text-gold drop-shadow-[0_0_8px_rgba(255,195,0,0.5)]" : "text-white/60"}`}>
+                    <span className={`text-[10px] font-mono ${isActive ? "text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.8)] font-bold" : "text-white/60"}`}>
                       {String(count).padStart(2, '0')}
                     </span>
                   </button>
@@ -286,12 +291,12 @@ export default function ExplorarPage() {
                 >
                   {paginated.map((company) => (
                     <Link key={company.id} href={`/empresa/${company.id}`} className="group block h-full">
-                      <div className="h-full relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.06] group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(255,195,0,0.12)] flex flex-col group-hover:-translate-y-1">
+                      <div className="h-full relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.06] group-hover:border-amber-500/40 transition-all duration-500 group-hover:shadow-[0_0_40px_rgba(245,158,11,0.2)] flex flex-col group-hover:-translate-y-1">
                         
                         {/* Cover Image */}
                         <div className="relative h-[45%] flex-none overflow-hidden">
                           <Image src={company.image} alt={company.name} fill className="object-cover opacity-40 group-hover:opacity-70 group-hover:scale-110 transition-all duration-700" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#00050f] via-transparent to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#080402] via-[#080402]/40 to-transparent" />
                           
                           <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/40 backdrop-blur-md border border-white/10 px-2 py-1 rounded-full">
                             <Star className="w-2.5 h-2.5 text-gold fill-gold" />
@@ -308,8 +313,8 @@ export default function ExplorarPage() {
                         {/* Content */}
                         <div className="flex-1 flex flex-col justify-between p-5 relative z-10">
                           {/* Logo Avatar overlapping cover */}
-                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#00050f] rounded-xl border border-gold/30 flex items-center justify-center shadow-xl transform group-hover:rotate-6 transition-transform duration-500">
-                            <span className="text-xs font-luxury text-gold">{company.logo}</span>
+                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#080402] rounded-xl border border-amber-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.1)] transform group-hover:rotate-6 transition-transform duration-500">
+                            <span className="text-xs font-luxury text-amber-400">{company.logo}</span>
                           </div>
 
                           <div className="pt-6">
