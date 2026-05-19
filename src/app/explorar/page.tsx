@@ -38,6 +38,17 @@ const baseCompanies = [
   { id:"sabor-y-elegancia",    name:"Sabor y Elegancia",      rating:4.9, category:"Comida Peruana",       logo:"SE", tag:"Top",        district:"Miraflores"   },
 ];
 
+const premiumImages = [
+  "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1530103862676-de8892ebe6c4?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1478146896981-b80fe463b330?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?q=80&w=800&auto=format&fit=crop"
+];
+
 // Generamos catálogos múltiples para demostrar que una empresa puede aparecer en varios filtros
 const companies = baseCompanies.map((c, i) => {
   // Asignamos catálogos lógicos a algunas empresas clave para la demo
@@ -75,8 +86,21 @@ const companies = baseCompanies.map((c, i) => {
     }
   }
 
-  return { ...c, catalogos };
+  const image = premiumImages[i % premiumImages.length];
+
+  return { ...c, catalogos, image };
 });
+
+const getBadgeClasses = (tag: string) => {
+  const lower = tag.toLowerCase();
+  if (lower === "verificado") return "text-emerald-300 border-emerald-400/40 bg-emerald-400/10 shadow-[0_0_10px_rgba(52,211,153,0.1)]";
+  if (lower === "premium" || lower === "top" || lower === "exclusivo") return "text-yellow-300 border-yellow-400/50 bg-yellow-400/15 shadow-[0_0_15px_rgba(250,204,21,0.15)]";
+  if (lower === "nuevo") return "text-indigo-300 border-indigo-400/40 bg-indigo-400/10 shadow-[0_0_10px_rgba(129,140,248,0.1)]";
+  if (lower === "artesanal") return "text-orange-300 border-orange-400/40 bg-orange-400/10 shadow-[0_0_10px_rgba(251,146,60,0.1)]";
+  if (lower === "chef award") return "text-rose-300 border-rose-400/40 bg-rose-400/10 shadow-[0_0_10px_rgba(251,113,133,0.1)]";
+  return "text-gold border-gold/30 bg-gold/15"; // fallback
+};
+
 
 const ITEMS_PER_PAGE = 8; // Exactamente 8 cards por página (4 columnas x 2 filas)
 
@@ -130,7 +154,7 @@ export default function ExplorarPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar por nombre o distrito..."
-              className="bg-white/[0.04] border border-white/[0.08] rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-gold/40 transition-all text-white placeholder-white/25 w-72"
+              className="bg-white/[0.04] border border-white/[0.08] rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-gold/50 focus:shadow-[0_0_15px_rgba(255,195,0,0.15)] transition-all duration-300 text-white placeholder-white/50 w-72"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
@@ -179,7 +203,7 @@ export default function ExplorarPage() {
                     }`}
                   >
                     <span className="text-xs tracking-wide">{f}</span>
-                    <span className={`text-[10px] font-mono ${isActive ? "text-gold" : "text-white/20"}`}>
+                    <span className={`text-[10px] font-mono ${isActive ? "text-gold drop-shadow-[0_0_8px_rgba(255,195,0,0.5)]" : "text-white/60"}`}>
                       {String(count).padStart(2, '0')}
                     </span>
                   </button>
@@ -266,7 +290,7 @@ export default function ExplorarPage() {
                         
                         {/* Cover Image */}
                         <div className="relative h-[45%] flex-none overflow-hidden">
-                          <Image src="/hero.png" alt={company.name} fill className="object-cover opacity-40 group-hover:opacity-70 group-hover:scale-110 transition-all duration-700" />
+                          <Image src={company.image} alt={company.name} fill className="object-cover opacity-40 group-hover:opacity-70 group-hover:scale-110 transition-all duration-700" />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#00050f] via-transparent to-transparent" />
                           
                           <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/40 backdrop-blur-md border border-white/10 px-2 py-1 rounded-full">
@@ -275,8 +299,8 @@ export default function ExplorarPage() {
                           </div>
                           
                           {company.tag && (
-                            <div className="absolute top-3 left-3 px-2 py-1 rounded-full border border-gold/30 bg-gold/15 backdrop-blur-md">
-                              <span className="text-[8px] uppercase tracking-widest text-gold font-medium">{company.tag}</span>
+                            <div className={`absolute top-3 left-3 px-2 py-1 rounded-full border backdrop-blur-md ${getBadgeClasses(company.tag)}`}>
+                              <span className="text-[8px] uppercase tracking-widest font-medium">{company.tag}</span>
                             </div>
                           )}
                         </div>
