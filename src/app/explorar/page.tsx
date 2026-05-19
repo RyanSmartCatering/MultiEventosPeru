@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Star, MapPin, ChevronRight, SlidersHorizontal, X } from "lucide-react";
+import { Search, Star, MapPin, ChevronRight, SlidersHorizontal, X, ChevronLeft, Award, Crown, ArrowRight } from "lucide-react";
 import { UserNav } from "@/components/UserNav";
+import { motion, AnimatePresence } from "framer-motion";
 
 const FILTERS = ["Todos", "Bodas", "Corporativo", "Quinceañeros", "Comida", "Nocturnos", "Sociales"];
 
@@ -36,194 +37,248 @@ const companies = [
   { id:"sabor-y-elegancia",    name:"Sabor y Elegancia",      rating:4.9, category:"Comida Peruana",       cat:"Comida",      logo:"SE", tag:"Top",        district:"Miraflores",   catalogs:8  },
 ];
 
-const STARS = [5, 4, 3];
+const ITEMS_PER_PAGE = 8; // Exactamente 8 cards por página (4 columnas x 2 filas)
 
 export default function ExplorarPage() {
-  const [search, setSearch]           = useState("");
+  const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("Todos");
-  const [minRating, setMinRating]     = useState(0);
-  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, activeFilter]);
 
   const filtered = useMemo(() =>
     companies.filter(c => {
-      const matchCat    = activeFilter === "Todos" || c.cat === activeFilter;
+      const matchCat = activeFilter === "Todos" || c.cat === activeFilter;
       const matchSearch = !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.district.toLowerCase().includes(search.toLowerCase()) || c.category.toLowerCase().includes(search.toLowerCase());
-      const matchRating = c.rating >= minRating;
-      return matchCat && matchSearch && matchRating;
+      return matchCat && matchSearch;
     }),
-  [search, activeFilter, minRating]);
+  [search, activeFilter]);
 
-  const activeFilterCount = (activeFilter !== "Todos" ? 1 : 0) + (minRating > 0 ? 1 : 0);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const featuredCompany = companies[0]; // Ryan Smart Catering como destacado siempre en demo
 
   return (
     <main className="h-[100dvh] w-full bg-[#00050f] text-white overflow-hidden flex flex-col relative">
+      {/* Fondo inmersivo */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold/5 via-[#00050f] to-[#00050f] z-0" />
+      <div className="bg-dots opacity-30" />
+      <div className="bg-orb-tl opacity-20" />
+      <div className="bg-orb-br opacity-20" />
 
-      {/* Background */}
-      <div className="bg-dots" />
-      <div className="bg-orb-tl" />
-      <div className="bg-line-top" />
-      <div className="bg-corner-tl" />
-      <div className="bg-corner-tr" />
-
-      {/* ── NAV ── */}
-      <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05]">
+      {/* ── TOP NAV ── */}
+      <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05] bg-[#00050f]/80 backdrop-blur-md">
         <Link href="/" className="text-xl font-luxury gold-gradient font-bold tracking-tighter hover:opacity-80 transition-opacity">
           MULTIEVENTS
         </Link>
-        <UserNav />
-      </nav>
-
-      {/* ── HEADER + SEARCH ── */}
-      <div className="relative z-10 flex-none px-6 md:px-10 pt-5 pb-4 border-b border-white/[0.04]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-[1600px] mx-auto">
-
-          {/* Title + count */}
-          <div>
-            <p className="text-[8px] uppercase tracking-[0.5em] text-gold/40 mb-1">Directorio</p>
-            <h1 className="text-2xl md:text-3xl font-luxury leading-tight">
-              Descubre la <span className="gold-shimmer italic">Excelencia</span>
-              <span className="ml-3 text-sm font-sans font-normal text-white/25 not-italic">{filtered.length} empresas</span>
-            </h1>
-          </div>
-
-          {/* Search + filter */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gold/40 pointer-events-none" />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar empresa, distrito..."
-                className="bg-white/[0.04] border border-white/[0.08] rounded-full py-2.5 pl-10 pr-4 text-xs focus:outline-none focus:border-gold/40 transition-all text-white placeholder-white/25 w-64"
-              />
-              {search && (
-                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-            <button
-              onClick={() => setShowFilters(v => !v)}
-              className={`relative flex items-center gap-2 px-4 py-2.5 rounded-full text-[10px] uppercase tracking-[0.2em] border transition-all ${showFilters ? "border-gold/50 text-gold bg-gold/10" : "glass-btn text-white/50"}`}
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>Filtros</span>
-              {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gold text-black text-[8px] font-bold flex items-center justify-center">{activeFilterCount}</span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Filter drawer */}
-        {showFilters && (
-          <div className="max-w-[1600px] mx-auto mt-4 flex flex-wrap items-center gap-3">
-            <div className="flex flex-wrap gap-2">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-white/25 self-center mr-1">Tipo:</p>
-              {FILTERS.map(f => (
-                <button
-                  key={f}
-                  onClick={() => setActiveFilter(f)}
-                  className={`px-3.5 py-1.5 rounded-full text-[9px] uppercase tracking-[0.2em] transition-all duration-200 ${
-                    activeFilter === f ? "bg-gold text-black font-bold shadow-[0_0_16px_rgba(255,195,0,0.35)]" : "glass-btn text-white/45 hover:text-gold"
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-            <div className="h-5 w-px bg-white/10 hidden sm:block" />
-            <div className="flex flex-wrap gap-2">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-white/25 self-center mr-1">Mín ★:</p>
-              {STARS.map(s => (
-                <button
-                  key={s}
-                  onClick={() => setMinRating(minRating === s ? 0 : s)}
-                  className={`px-3.5 py-1.5 rounded-full text-[9px] tracking-widest transition-all ${
-                    minRating === s ? "bg-gold/20 border border-gold/50 text-gold" : "glass-btn text-white/40 hover:text-gold"
-                  }`}
-                >
-                  {"★".repeat(s)}+
-                </button>
-              ))}
-            </div>
-            {activeFilterCount > 0 && (
-              <button onClick={() => { setActiveFilter("Todos"); setMinRating(0); }} className="text-[9px] uppercase tracking-widest text-red-400/60 hover:text-red-400 transition-colors ml-2">
-                Limpiar filtros
+        <div className="flex items-center gap-4">
+          {/* Buscador Integrado en Nav */}
+          <div className="relative hidden md:block">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gold/40 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar por nombre o distrito..."
+              className="bg-white/[0.04] border border-white/[0.08] rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-gold/40 transition-all text-white placeholder-white/25 w-72"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
+                <X className="w-3 h-3" />
               </button>
             )}
           </div>
-        )}
-      </div>
+          <div className="w-px h-5 bg-white/10 hidden md:block" />
+          <UserNav />
+        </div>
+      </nav>
 
-      {/* ── COMPANIES GRID (scrollable internamente) ── */}
-      <div className="relative z-10 flex-1 overflow-y-auto scrollbar-hide px-6 md:px-10 py-5">
-        <div className="max-w-[1600px] mx-auto">
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 text-white/20">
-              <p className="text-2xl font-luxury mb-2">Sin resultados</p>
-              <p className="text-sm">Prueba con otros términos o quita los filtros.</p>
+      {/* ── MAIN DASHBOARD LAYOUT ── */}
+      <div className="relative z-10 flex-1 flex overflow-hidden">
+        
+        {/* ══ PANEL IZQUIERDO: Panel de Control (Fixed Width) ══ */}
+        <aside className="hidden md:flex flex-col w-[340px] border-r border-white/[0.05] bg-[#00050f]/60 backdrop-blur-xl p-6 flex-none">
+          
+          <div className="mb-8">
+            <p className="text-[9px] uppercase tracking-[0.4em] text-gold mb-2 flex items-center gap-2">
+              <Crown className="w-3 h-3" /> Ecosistema Premium
+            </p>
+            <h1 className="text-3xl font-luxury leading-tight mb-2">Directorio<br/><span className="text-white/40 italic">Exclusivo</span></h1>
+            <p className="text-xs text-white/40 leading-relaxed">Explora nuestra cuidada selección de proveedores de alto nivel para eventos excepcionales.</p>
+          </div>
+
+          {/* Filtros Estilizados */}
+          <div className="mb-8 flex-1">
+            <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 mb-4 px-1">Categorías</p>
+            <div className="flex flex-col gap-1.5">
+              {FILTERS.map(f => {
+                const count = f === "Todos" ? companies.length : companies.filter(c => c.cat === f).length;
+                const isActive = activeFilter === f;
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setActiveFilter(f)}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border ${
+                      isActive 
+                        ? "bg-gold/10 border-gold/40 text-gold shadow-[0_0_20px_rgba(255,195,0,0.1)]" 
+                        : "bg-white/[0.02] border-transparent text-white/50 hover:bg-white/[0.05] hover:text-white"
+                    }`}
+                  >
+                    <span className="text-xs tracking-wide">{f}</span>
+                    <span className={`text-[10px] font-mono ${isActive ? "text-gold" : "text-white/20"}`}>
+                      {String(count).padStart(2, '0')}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-              {filtered.map(company => (
-                <Link key={company.id} href={`/empresa/${company.id}`} className="group block">
-                  <div className="relative overflow-hidden rounded-xl bg-white/[0.03] border border-white/[0.07] group-hover:border-gold/40 transition-all duration-300 group-hover:shadow-[0_0_24px_rgba(255,195,0,0.1)] flex flex-col">
+          </div>
 
-                    {/* Cover image — fixed compact height */}
-                    <div className="relative h-24 flex-none overflow-hidden">
-                      <Image src="/hero.png" alt={company.name} fill className="object-cover opacity-35 group-hover:opacity-55 group-hover:scale-105 transition-all duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#00050f] via-[#00050f]/20 to-transparent" />
+          {/* Tarjeta Destacada para rellenar espacio y dar lujo */}
+          <div className="mt-auto relative rounded-2xl overflow-hidden border border-white/[0.08] p-5 group cursor-pointer">
+            <div className="absolute inset-0 bg-gradient-to-br from-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="flex items-center gap-3 mb-3 relative z-10">
+              <Award className="w-5 h-5 text-gold" />
+              <div>
+                <p className="text-[8px] uppercase tracking-[0.3em] text-gold/60">Destacado del Mes</p>
+                <p className="text-sm font-luxury text-white truncate">{featuredCompany.name}</p>
+              </div>
+            </div>
+            <p className="text-[10px] text-white/40 mb-4 relative z-10 line-clamp-2">Reconocido por su excelencia en galas corporativas y bodas de alta gama.</p>
+            <Link href={`/empresa/${featuredCompany.id}`} className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-gold hover:text-white transition-colors relative z-10">
+              Ver perfil <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </aside>
 
-                      {/* Rating pill */}
-                      <div className="absolute top-1.5 right-1.5 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
-                        <Star className="w-2 h-2 text-gold fill-gold" />
-                        <span className="text-[9px] font-semibold">{company.rating}</span>
-                      </div>
+        {/* ══ PANEL DERECHO: Paginación + Grid Fijo ══ */}
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          
+          {/* Header del Grid */}
+          <div className="flex-none flex items-center justify-between px-8 py-5 border-b border-white/[0.03]">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+              <p className="text-xs text-white/60">
+                Mostrando <span className="text-white font-medium">{paginated.length}</span> resultados de <span className="text-white font-medium">{filtered.length}</span>
+              </p>
+            </div>
+            
+            {/* Controles de Paginación Superior (opcional, da simetría) */}
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] uppercase tracking-widest text-white/30">Página {currentPage} de {totalPages}</span>
+              <div className="flex gap-1.5">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
 
-                      {/* Tag */}
-                      {company.tag && (
-                        <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full border border-gold/30 bg-gold/15">
-                          <span className="text-[7px] uppercase tracking-wide text-gold">{company.tag}</span>
+          {/* Grid Principal - SIN SCROLL, llena la pantalla */}
+          <div className="flex-1 p-8">
+            {paginated.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-white/20 border border-dashed border-white/10 rounded-3xl">
+                <Search className="w-12 h-12 mb-4 text-white/10" />
+                <p className="text-2xl font-luxury mb-2 text-white/40">Sin resultados</p>
+                <p className="text-sm">Ajusta tu búsqueda o cambia de categoría.</p>
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={currentPage + activeFilter + search}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4 }}
+                  // Usamos grid de 4 columnas x 2 filas asegurando que las filas ocupen el 50% del espacio
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full"
+                  style={{ gridTemplateRows: 'repeat(2, minmax(0, 1fr))' }}
+                >
+                  {paginated.map((company, i) => (
+                    <Link key={company.id} href={`/empresa/${company.id}`} className="group block h-full">
+                      <div className="h-full relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.06] group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(255,195,0,0.12)] flex flex-col group-hover:-translate-y-1">
+                        
+                        {/* Cover Image */}
+                        <div className="relative h-[45%] flex-none overflow-hidden">
+                          <Image src="/hero.png" alt={company.name} fill className="object-cover opacity-40 group-hover:opacity-70 group-hover:scale-110 transition-all duration-700" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#00050f] via-transparent to-transparent" />
+                          
+                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/40 backdrop-blur-md border border-white/10 px-2 py-1 rounded-full">
+                            <Star className="w-2.5 h-2.5 text-gold fill-gold" />
+                            <span className="text-[10px] font-semibold text-white">{company.rating}</span>
+                          </div>
+                          
+                          {company.tag && (
+                            <div className="absolute top-3 left-3 px-2 py-1 rounded-full border border-gold/30 bg-gold/15 backdrop-blur-md">
+                              <span className="text-[8px] uppercase tracking-widest text-gold font-medium">{company.tag}</span>
+                            </div>
+                          )}
                         </div>
-                      )}
 
-                      {/* Logo avatar */}
-                      <div className="absolute -bottom-4 left-2.5 w-8 h-8 bg-[#00050f] rounded-full border border-gold/25 flex items-center justify-center z-10 shadow-lg">
-                        <span className="text-[8px] font-luxury text-gold">{company.logo}</span>
-                      </div>
-                    </div>
+                        {/* Content */}
+                        <div className="flex-1 flex flex-col justify-between p-5 relative z-10">
+                          {/* Logo Avatar overlapping cover */}
+                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#00050f] rounded-xl border border-gold/30 flex items-center justify-center shadow-xl transform group-hover:rotate-6 transition-transform duration-500">
+                            <span className="text-xs font-luxury text-gold">{company.logo}</span>
+                          </div>
 
-                    {/* Info */}
-                    <div className="flex-none pt-5 pb-3 px-3">
-                      <div className="flex items-center gap-1 mb-0.5">
-                        <MapPin className="w-2 h-2 text-gold/30 flex-shrink-0" />
-                        <span className="text-[7px] text-white/25 uppercase tracking-wider truncate">{company.district}</span>
+                          <div className="pt-6">
+                            <h3 className="text-lg font-luxury text-white/90 group-hover:text-gold transition-colors leading-tight mb-1">{company.name}</h3>
+                            <p className="text-[9px] uppercase tracking-[0.2em] text-gold/60 mb-3">{company.category}</p>
+                            
+                            <div className="flex items-center gap-1.5 text-white/40 group-hover:text-white/60 transition-colors">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="text-xs tracking-wide truncate">{company.district}</span>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 pt-4 border-t border-white/[0.05] flex items-center justify-between">
+                            <span className="text-[10px] text-white/30 uppercase tracking-widest">{company.catalogs} catálogos</span>
+                            <div className="w-6 h-6 rounded-full border border-gold/0 group-hover:border-gold/40 flex items-center justify-center group-hover:bg-gold/10 transition-all duration-300">
+                              <ChevronRight className="w-3 h-3 text-gold/0 group-hover:text-gold transition-colors" />
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-[7px] uppercase tracking-[0.2em] text-gold/45 mb-0.5 truncate">{company.category}</p>
-                      <h3 className="text-[11px] font-luxury text-white/85 group-hover:text-gold transition-colors leading-tight mb-1.5 line-clamp-2">{company.name}</h3>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[7px] text-white/20">{company.catalogs} catálogos</span>
-                        <ChevronRight className="w-3 h-3 text-gold/0 group-hover:text-gold/60 transition-all" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+                    </Link>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            )}
+          </div>
+
+          {/* Footer del Grid (Paginación Inferior) */}
+          {totalPages > 1 && (
+            <div className="flex-none px-8 py-5 border-t border-white/[0.03] flex items-center justify-center gap-2 relative z-10">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    currentPage === i + 1 ? "w-8 bg-gold" : "w-2 bg-white/20 hover:bg-white/40"
+                  }`}
+                  aria-label={`Ir a la página ${i + 1}`}
+                />
               ))}
             </div>
           )}
         </div>
       </div>
-
-      {/* Footer fijo — cantidad visible */}
-      <div className="relative z-10 flex-none px-6 md:px-10 py-2.5 border-t border-white/[0.04] flex justify-between items-center">
-        <p className="text-[8px] uppercase tracking-[0.35em] text-white/20">
-          Mostrando <span className="text-gold/50">{filtered.length}</span> de <span className="text-gold/50">{companies.length}</span> empresas
-        </p>
-        <p className="text-[8px] uppercase tracking-[0.35em] text-white/15">Multi Eventos Perú © 2026</p>
-      </div>
-
     </main>
   );
 }
