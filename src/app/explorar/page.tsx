@@ -134,32 +134,29 @@ export default function ExplorarPage() {
   const featuredCompany = companies[0]; // Ryan Smart Catering como destacado
 
   return (
-    <main className="h-[100dvh] w-full bg-[#00050f] text-white overflow-hidden flex flex-col relative">
-      {/* Fondo inmersivo Golden Hour Luxury sobre Azul Noche Profundo */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-600/15 via-[#00050f] to-[#00020a] z-0" />
+    <main className="h-[100dvh] w-full bg-[#030712] text-white overflow-hidden flex flex-col relative">
+      {/* Fondo inmersivo: Azul Noche Profundo con Polvo de Oro */}
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')] bg-cover bg-center opacity-10 mix-blend-screen" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/10 via-[#030712]/80 to-[#000000] z-0" />
       
-      {/* Textura sutil y blurs ámbar/bronce */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-700/10 blur-[150px] rounded-full animate-pulse" style={{ animationDuration: '12s' }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-amber-800/5 blur-[100px] rounded-full" />
-      
-      {/* Líneas Art Déco sutiles */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(245,158,11,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(245,158,11,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] z-0" />
+      {/* Nebulosas doradas (Glows asimétricos) */}
+      <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-amber-600/10 blur-[150px] rounded-full" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-amber-800/10 blur-[150px] rounded-full" />
 
       {/* ── TOP NAV ── */}
-      <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-amber-500/10 bg-[#00050f]/80 backdrop-blur-md">
-        <Link href="/" className="text-xl font-luxury gold-gradient font-bold tracking-tighter hover:opacity-80 transition-opacity">
+      <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/5 bg-[#030712]/60 backdrop-blur-xl">
+        <Link href="/" className="text-xl font-luxury bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 bg-clip-text text-transparent font-bold tracking-tighter hover:opacity-80 transition-opacity">
           MULTIEVENTS
         </Link>
         <div className="flex items-center gap-4">
           <div className="relative hidden md:block">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-500/40 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-500/60 pointer-events-none" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar por nombre o distrito..."
-              className="bg-white/[0.04] border border-amber-500/20 rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-amber-500/60 focus:shadow-[0_0_20px_rgba(245,158,11,0.25)] transition-all duration-300 text-white placeholder-white/50 w-72"
+              placeholder="Buscar por nombre o destino..."
+              className="bg-black/40 border border-amber-500/40 rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-amber-400 focus:shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all duration-300 text-white placeholder-white/40 w-72"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
@@ -176,7 +173,7 @@ export default function ExplorarPage() {
       <div className="relative z-10 flex-1 flex overflow-hidden">
         
         {/* ══ PANEL IZQUIERDO: Panel de Control (Fixed Width) ══ */}
-        <aside className="hidden md:flex flex-col w-[340px] border-r border-amber-500/10 bg-[#00050f]/60 backdrop-blur-xl p-6 flex-none">
+        <aside className="hidden md:flex flex-col w-[340px] border-r border-white/5 bg-[#030712]/40 backdrop-blur-2xl p-6 flex-none relative z-10">
           
           <div className="mb-8">
             <p className="text-[9px] uppercase tracking-[0.4em] text-amber-500 mb-2 flex items-center gap-2">
@@ -203,8 +200,8 @@ export default function ExplorarPage() {
                     onClick={() => setActiveFilter(f)}
                     className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border ${
                       isActive 
-                        ? "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.15)]" 
-                        : "bg-white/[0.02] border-transparent text-white/50 hover:bg-white/[0.05] hover:text-white"
+                        ? "bg-gradient-to-r from-amber-900/40 to-transparent border-amber-500/50 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.1)]" 
+                        : "bg-transparent border-transparent text-white/40 hover:bg-white/5 hover:text-white"
                     }`}
                   >
                     <span className="text-xs tracking-wide">{f}</span>
@@ -218,8 +215,8 @@ export default function ExplorarPage() {
           </div>
 
           {/* Tarjeta Destacada */}
-          <div className="mt-auto relative rounded-2xl overflow-hidden border border-white/[0.08] p-5 group cursor-pointer">
-            <div className="absolute inset-0 bg-gradient-to-br from-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="mt-auto relative rounded-2xl overflow-hidden border border-amber-500/20 p-5 group cursor-pointer bg-black/40 backdrop-blur-md">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="flex items-center gap-3 mb-3 relative z-10">
               <Award className="w-5 h-5 text-amber-400" />
               <div>
@@ -291,21 +288,23 @@ export default function ExplorarPage() {
                 >
                   {paginated.map((company) => (
                     <Link key={company.id} href={`/empresa/${company.id}`} className="group block h-full">
-                      <div className="h-full relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.06] group-hover:border-amber-500/40 transition-all duration-500 group-hover:shadow-[0_0_40px_rgba(245,158,11,0.2)] flex flex-col group-hover:-translate-y-1">
+                      <div className={`h-full relative overflow-hidden rounded-2xl bg-[#050B14]/80 backdrop-blur-xl border transition-all duration-500 flex flex-col group-hover:-translate-y-1 ${
+                        company.id === featuredCompany.id ? "border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]" : "border-white/5 group-hover:border-amber-500/30 group-hover:shadow-[0_0_30px_rgba(245,158,11,0.1)]"
+                      }`}>
                         
                         {/* Cover Image */}
-                        <div className="relative h-[45%] flex-none overflow-hidden">
-                          <Image src={company.image} alt={company.name} fill className="object-cover opacity-40 group-hover:opacity-70 group-hover:scale-110 transition-all duration-700" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#00050f] via-[#00050f]/40 to-transparent" />
+                        <div className="relative h-[50%] flex-none overflow-hidden">
+                          <Image src={company.image} alt={company.name} fill className="object-cover opacity-60 group-hover:opacity-90 group-hover:scale-110 transition-all duration-700" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#050B14] via-[#050B14]/40 to-transparent" />
                           
-                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/40 backdrop-blur-md border border-white/10 px-2 py-1 rounded-full">
-                            <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md border border-amber-500/20 px-2 py-1 rounded-full">
+                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
                             <span className="text-[10px] font-semibold text-white">{company.rating}</span>
                           </div>
                           
                           {company.tag && (
-                            <div className={`absolute top-3 left-3 px-2 py-1 rounded-full border backdrop-blur-md ${getBadgeClasses(company.tag)}`}>
-                              <span className="text-[8px] uppercase tracking-widest font-medium">{company.tag}</span>
+                            <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full border backdrop-blur-md ${getBadgeClasses(company.tag)}`}>
+                              <span className="text-[8px] uppercase tracking-widest font-bold">{company.tag}</span>
                             </div>
                           )}
                         </div>
@@ -313,19 +312,17 @@ export default function ExplorarPage() {
                         {/* Content */}
                         <div className="flex-1 flex flex-col justify-between p-5 relative z-10">
                           {/* Logo Avatar overlapping cover */}
-                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#00050f] rounded-xl border border-amber-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.1)] transform group-hover:rotate-6 transition-transform duration-500">
+                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#020617] rounded-xl border border-amber-500/40 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.15)] transform group-hover:rotate-6 transition-transform duration-500">
                             <span className="text-xs font-luxury text-amber-400">{company.logo}</span>
                           </div>
 
                           <div className="pt-6">
-                            <h3 className="text-lg font-luxury text-white/90 group-hover:text-amber-500 transition-colors leading-tight mb-1">{company.name}</h3>
+                            <h3 className="text-lg font-luxury text-white/90 group-hover:text-amber-400 transition-colors leading-tight mb-2">{company.name}</h3>
                             
-                            <div className="flex flex-wrap gap-1 mb-3">
+                            <div className="flex flex-wrap gap-1.5 mb-3">
                               {/* Mostramos los tipos de catálogos que ofrece esta empresa */}
                               {Array.from(new Set(company.catalogos.map(cat => cat.tipo_evento))).map((tipo, idx) => (
-                                <span key={idx} className={`text-[8px] px-1.5 py-0.5 rounded border uppercase tracking-wider ${
-                                  tipo === activeFilter ? "bg-amber-500/20 border-amber-500/50 text-amber-500" : "bg-white/5 border-white/10 text-white/40"
-                                }`}>
+                                <span key={idx} className="text-[7px] px-2 py-0.5 rounded-full border border-amber-500/30 uppercase tracking-widest text-amber-500/80 bg-amber-900/10">
                                   {tipo}
                                 </span>
                               ))}
@@ -333,14 +330,14 @@ export default function ExplorarPage() {
                             
                             <div className="flex items-center gap-1.5 text-white/40 group-hover:text-white/60 transition-colors">
                               <MapPin className="w-3 h-3 flex-shrink-0" />
-                              <span className="text-xs tracking-wide truncate">{company.district}</span>
+                              <span className="text-[10px] tracking-wide truncate">{company.district}</span>
                             </div>
                           </div>
 
-                          <div className="mt-4 pt-4 border-t border-white/[0.05] flex items-center justify-between">
-                            <span className="text-[10px] text-white/30 uppercase tracking-widest">{company.catalogos.length} catálogos en total</span>
+                          <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between">
+                            <span className="text-[9px] text-white/30 uppercase tracking-[0.2em]">{company.catalogos.length} catálogos en total</span>
                             <div className="w-6 h-6 rounded-full border border-amber-500/0 group-hover:border-amber-500/40 flex items-center justify-center group-hover:bg-amber-500/10 transition-all duration-300">
-                              <ChevronRight className="w-3 h-3 text-amber-500/0 group-hover:text-amber-500 transition-colors" />
+                              <ChevronRight className="w-3 h-3 text-amber-500/0 group-hover:text-amber-400 transition-colors" />
                             </div>
                           </div>
                         </div>
