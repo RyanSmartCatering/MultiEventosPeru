@@ -93,12 +93,12 @@ const companies = baseCompanies.map((c, i) => {
 
 const getBadgeClasses = (tag: string) => {
   const lower = tag.toLowerCase();
-  if (lower === "verificado") return "text-emerald-300 border-yellow-500/50 bg-black/40 shadow-[0_0_15px_rgba(52,211,153,0.2)]";
-  if (lower === "nuevo") return "text-blue-300 border-yellow-500/50 bg-black/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
-  if (lower === "premium" || lower === "top" || lower === "exclusivo") return "text-yellow-300 border-yellow-400/60 bg-black/40 shadow-[0_0_20px_rgba(234,179,8,0.25)]";
+  if (lower === "verificado") return "text-emerald-300 border-[#D4AF37]/50 bg-black/40 shadow-[0_0_15px_rgba(52,211,153,0.2)]";
+  if (lower === "nuevo") return "text-blue-300 border-[#D4AF37]/50 bg-black/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
+  if (lower === "premium" || lower === "top" || lower === "exclusivo") return "text-[#D4AF37] border-[#D4AF37]/60 bg-black/40 shadow-[0_0_20px_rgba(212,175,55,0.25)]";
   if (lower === "artesanal") return "text-orange-300 border-orange-500/50 bg-black/40 shadow-[0_0_15px_rgba(251,146,60,0.2)]";
   if (lower === "chef award") return "text-rose-300 border-rose-500/50 bg-black/40 shadow-[0_0_15px_rgba(244,63,94,0.2)]";
-  return "text-yellow-200 border-yellow-600/40 bg-black/40"; // fallback
+  return "text-[#D4AF37] border-[#D4AF37]/40 bg-black/40"; // fallback
 };
 
 
@@ -136,27 +136,27 @@ export default function ExplorarPage() {
   return (
     <main className="h-[100dvh] w-full bg-[#000511] text-white overflow-hidden flex flex-col relative">
       {/* Fondo inmersivo Premium: Noche y Oro Verdadero */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')] bg-cover bg-center opacity-50" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-transparent via-[#000511]/70 to-[#000105] z-0" />
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=2070')] bg-cover bg-center opacity-25 mix-blend-screen pointer-events-none -z-20" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#000511]/40 via-[#000511]/90 to-[#000105] pointer-events-none -z-10" />
       
-      {/* Nebulosas doradas puras (Alta Saturacion) */}
-      <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#FFB800]/20 blur-[150px] rounded-full" />
-      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#FFD700]/20 blur-[150px] rounded-full" />
+      {/* Nebulosas doradas (detrás de todo) */}
+      <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#D4AF37]/15 blur-[150px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#D4AF37]/15 blur-[150px] rounded-full pointer-events-none -z-10" />
 
       {/* ── TOP NAV TRANSPARENTE ── */}
       <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/5 bg-transparent backdrop-blur-md">
-        <Link href="/" className="text-xl font-luxury bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-600 bg-clip-text text-transparent font-bold tracking-tighter hover:opacity-80 transition-opacity">
+        <Link href="/" className="text-xl font-luxury text-[#D4AF37] font-bold tracking-tighter hover:opacity-80 transition-opacity drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">
           MULTIEVENTS
         </Link>
         <div className="flex items-center gap-4">
           <div className="relative hidden md:block">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-yellow-500/60 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#D4AF37]/60 pointer-events-none" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar por nombre o destino..."
-              className="bg-white/[0.02] backdrop-blur-md border border-yellow-500/40 rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-yellow-400 focus:shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all duration-300 text-white placeholder-white/40 w-72"
+              className="bg-white/[0.02] backdrop-blur-md border border-[#D4AF37]/40 rounded-full py-2 pl-10 pr-8 text-xs focus:outline-none focus:border-[#D4AF37] focus:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all duration-300 text-white placeholder-white/40 w-72"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
@@ -176,7 +176,7 @@ export default function ExplorarPage() {
         <aside className="hidden md:flex flex-col w-[340px] border-r border-white/5 bg-transparent backdrop-blur-md p-6 flex-none relative z-10">
           
           <div className="mb-8">
-            <p className="text-[9px] uppercase tracking-[0.4em] text-yellow-500 mb-2 flex items-center gap-2">
+            <p className="text-[9px] uppercase tracking-[0.4em] text-[#D4AF37] mb-2 flex items-center gap-2">
               <Crown className="w-3 h-3" /> Ecosistema Premium
             </p>
             <h1 className="text-3xl font-luxury leading-tight mb-2">Directorio<br/><span className="text-white/40 italic">Exclusivo</span></h1>
@@ -200,12 +200,12 @@ export default function ExplorarPage() {
                     onClick={() => setActiveFilter(f)}
                     className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border ${
                       isActive 
-                        ? "bg-gradient-to-r from-yellow-900/30 to-transparent border-yellow-500/50 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.1)]" 
+                        ? "bg-gradient-to-r from-[#D4AF37]/20 to-transparent border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.1)]" 
                         : "bg-transparent border-transparent text-white/40 hover:bg-white/5 hover:text-white"
                     }`}
                   >
                     <span className="text-xs tracking-wide">{f}</span>
-                    <span className={`text-[10px] font-mono ${isActive ? "text-yellow-400 drop-shadow-[0_0_10px_rgba(234,179,8,0.8)] font-bold" : "text-white/60"}`}>
+                    <span className={`text-[10px] font-mono ${isActive ? "text-[#D4AF37] drop-shadow-[0_0_10px_rgba(212,175,55,0.8)] font-bold" : "text-white/60"}`}>
                       {String(count).padStart(2, '0')}
                     </span>
                   </button>
@@ -215,17 +215,17 @@ export default function ExplorarPage() {
           </div>
 
           {/* Tarjeta Destacada */}
-          <div className="mt-auto relative rounded-2xl overflow-hidden border border-yellow-500/30 p-5 group cursor-pointer bg-white/[0.02] backdrop-blur-md">
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="mt-auto relative rounded-2xl overflow-hidden border border-[#D4AF37]/30 p-5 group cursor-pointer bg-white/[0.02] backdrop-blur-md">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="flex items-center gap-3 mb-3 relative z-10">
-              <Award className="w-5 h-5 text-yellow-400" />
+              <Award className="w-5 h-5 text-[#D4AF37]" />
               <div>
-                <p className="text-[8px] uppercase tracking-[0.3em] text-yellow-400/60">Destacado del Mes</p>
+                <p className="text-[8px] uppercase tracking-[0.3em] text-[#D4AF37]/60">Destacado del Mes</p>
                 <p className="text-sm font-luxury text-white truncate">{featuredCompany.name}</p>
               </div>
             </div>
             <p className="text-[10px] text-white/40 mb-4 relative z-10 line-clamp-2">Reconocido por su excelencia y múltiples opciones en Bodas y Corporativo.</p>
-            <Link href={`/empresa/${featuredCompany.id}`} className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-yellow-400 hover:text-white transition-colors relative z-10">
+            <Link href={`/empresa/${featuredCompany.id}`} className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#D4AF37] hover:text-white transition-colors relative z-10">
               Ver perfil <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -237,7 +237,7 @@ export default function ExplorarPage() {
           {/* Header del Grid */}
           <div className="flex-none flex items-center justify-between px-8 py-5 border-b border-white/[0.03]">
             <div className="flex items-center gap-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
               <p className="text-xs text-white/60">
                 Mostrando <span className="text-white font-medium">{paginated.length}</span> empresas con catálogos de <span className="text-white font-medium">{activeFilter}</span>
               </p>
@@ -283,12 +283,12 @@ export default function ExplorarPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.4 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[340px]"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[380px]"
                 >
                   {paginated.map((company) => (
                     <Link key={company.id} href={`/empresa/${company.id}`} className="group block h-full">
                       <div className={`h-full relative overflow-hidden rounded-2xl bg-[#050B14]/80 backdrop-blur-xl border transition-all duration-500 flex flex-col group-hover:-translate-y-1 ${
-                        company.id === featuredCompany.id ? "border-[#FFB800]/80 shadow-[0_0_20px_rgba(255,184,0,0.3)]" : "border-white/10 group-hover:border-[#FFB800]/50 group-hover:shadow-[0_0_30px_rgba(255,184,0,0.2)]"
+                        company.id === featuredCompany.id ? "border-[#D4AF37]/80 shadow-[0_0_20px_rgba(212,175,55,0.3)]" : "border-white/10 group-hover:border-[#D4AF37]/50 group-hover:shadow-[0_0_30px_rgba(212,175,55,0.2)]"
                       }`}>
                         
                         {/* Cover Image */}
@@ -296,8 +296,8 @@ export default function ExplorarPage() {
                           <Image src={company.image} alt={company.name} fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#050B14] via-[#050B14]/40 to-transparent" />
                           
-                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/80 backdrop-blur-md border border-[#FFD700]/40 px-2 py-1 rounded-full">
-                            <Star className="w-2.5 h-2.5 text-[#FFD700] fill-[#FFD700]" />
+                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/80 backdrop-blur-md border border-[#D4AF37]/40 px-2 py-1 rounded-full">
+                            <Star className="w-2.5 h-2.5 text-[#D4AF37] fill-[#D4AF37]" />
                             <span className="text-[10px] font-bold text-white">{company.rating}</span>
                           </div>
                           
@@ -309,34 +309,34 @@ export default function ExplorarPage() {
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 flex flex-col justify-between p-5 relative z-10">
+                        <div className="flex-1 flex flex-col p-5 relative z-10">
                           {/* Logo Avatar overlapping cover */}
-                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#020617] rounded-xl border border-[#FFD700]/60 flex items-center justify-center shadow-[0_0_15px_rgba(255,215,0,0.2)] transform group-hover:rotate-6 transition-transform duration-500">
-                            <span className="text-xs font-luxury text-[#FFD700]">{company.logo}</span>
+                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#020617] rounded-xl border border-[#D4AF37]/60 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.2)] transform group-hover:rotate-6 transition-transform duration-500">
+                            <span className="text-xs font-luxury text-[#D4AF37]">{company.logo}</span>
                           </div>
 
                           <div className="pt-6">
-                            <h3 className="text-lg font-luxury text-white group-hover:text-[#FFD700] transition-colors leading-tight mb-2">{company.name}</h3>
+                            <h3 className="text-lg font-luxury text-white group-hover:text-[#D4AF37] transition-colors leading-tight mb-2">{company.name}</h3>
                             
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               {/* Mostramos los tipos de catálogos que ofrece esta empresa */}
                               {Array.from(new Set(company.catalogos.map(cat => cat.tipo_evento))).map((tipo, idx) => (
-                                <span key={idx} className="text-[7px] px-2 py-0.5 rounded-full border border-[#FFB800]/50 uppercase tracking-widest text-[#FFB800] bg-[#FFB800]/10 font-bold">
+                                <span key={idx} className="text-[7px] px-2 py-0.5 rounded-full border border-[#D4AF37]/50 uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 font-bold">
                                   {tipo}
                                 </span>
                               ))}
                             </div>
                             
                             <div className="flex items-center gap-1.5 text-white/60 group-hover:text-white transition-colors">
-                              <MapPin className="w-3 h-3 flex-shrink-0 text-[#FFD700]/70" />
+                              <MapPin className="w-3 h-3 flex-shrink-0 text-[#D4AF37]/70" />
                               <span className="text-[10px] tracking-wide truncate">{company.district}</span>
                             </div>
                           </div>
 
-                          <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between">
+                          <div className="mt-auto pt-4 border-t border-white/[0.04] flex items-center justify-between">
                             <span className="text-[9px] text-white/50 uppercase tracking-[0.2em] font-semibold">{company.catalogos.length} catálogos en total</span>
-                            <div className="w-6 h-6 rounded-full border border-yellow-500/0 group-hover:border-[#FFD700]/60 flex items-center justify-center group-hover:bg-[#FFD700]/20 transition-all duration-300">
-                              <ChevronRight className="w-3 h-3 text-yellow-500/0 group-hover:text-[#FFD700] transition-colors" />
+                            <div className="w-6 h-6 rounded-full border border-transparent group-hover:border-[#D4AF37]/60 flex items-center justify-center group-hover:bg-[#D4AF37]/20 transition-all duration-300">
+                              <ChevronRight className="w-3 h-3 text-transparent group-hover:text-[#D4AF37] transition-colors" />
                             </div>
                           </div>
                         </div>
