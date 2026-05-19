@@ -9,33 +9,74 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const FILTERS = ["Todos", "Bodas", "Corporativo", "Quinceañeros", "Comida", "Nocturnos", "Sociales"];
 
-// 24 empresas demo — en producción vendrán de Supabase
-const companies = [
-  { id:"ryan-smart-catering",  name:"Ryan Smart Catering",   rating:5.0, category:"Gala & Corporativo",  cat:"Corporativo", logo:"RS", tag:"Verificado", district:"Miraflores",  catalogs:4  },
-  { id:"elite-events",         name:"Elite Events Perú",     rating:4.9, category:"Bodas de Lujo",        cat:"Bodas",       logo:"EE", tag:"Premium",    district:"San Isidro",  catalogs:7  },
-  { id:"gourmet-peru",         name:"Gourmet Perú",          rating:4.8, category:"Comida Fusión",        cat:"Comida",      logo:"GP", tag:"Nuevo",      district:"Surco",        catalogs:3  },
-  { id:"midnight-banquets",    name:"Midnight Banquets",     rating:4.9, category:"Eventos Nocturnos",    cat:"Nocturnos",   logo:"MB",                   district:"La Molina",    catalogs:5  },
-  { id:"la-gala-catering",     name:"La Gala Catering",      rating:4.7, category:"Quinceañeros",         cat:"Quinceañeros",logo:"LG",                   district:"San Borja",    catalogs:6  },
-  { id:"sabores-andinos",      name:"Sabores Andinos",        rating:4.8, category:"Comida Peruana",       cat:"Comida",      logo:"SA", tag:"Artesanal",  district:"Barranco",     catalogs:4  },
-  { id:"prestige-events",      name:"Prestige Events",        rating:4.6, category:"Eventos Sociales",     cat:"Sociales",    logo:"PE",                   district:"Jesús María",  catalogs:8  },
-  { id:"golden-banquet",       name:"Golden Banquet",         rating:4.9, category:"Bodas & Gala",         cat:"Bodas",       logo:"GB", tag:"Top",        district:"San Miguel",   catalogs:5  },
-  { id:"luxe-moments",         name:"Luxe Moments",           rating:4.7, category:"Bodas de Lujo",        cat:"Bodas",       logo:"LM", tag:"Exclusivo",  district:"Miraflores",   catalogs:3  },
-  { id:"fiesta-imperial",      name:"Fiesta Imperial",        rating:4.5, category:"Gala & Corporativo",   cat:"Corporativo", logo:"FI",                   district:"San Isidro",   catalogs:6  },
-  { id:"dulces-momentos",      name:"Dulces Momentos",        rating:4.6, category:"Quinceañeros",         cat:"Quinceañeros",logo:"DM",                   district:"Lince",         catalogs:4  },
-  { id:"alta-cocina-peru",     name:"Alta Cocina Perú",       rating:4.9, category:"Comida Fusión",        cat:"Comida",      logo:"AC", tag:"Chef Award", district:"Barranco",     catalogs:9  },
-  { id:"eventos-aurora",       name:"Eventos Aurora",         rating:4.5, category:"Eventos Sociales",     cat:"Sociales",    logo:"EA",                   district:"Pueblo Libre", catalogs:3  },
-  { id:"banquetes-sol",        name:"Banquetes del Sol",      rating:4.4, category:"Comida Peruana",       cat:"Comida",      logo:"BS",                   district:"Surquillo",    catalogs:2  },
-  { id:"noche-de-gala",        name:"Noche de Gala",          rating:4.8, category:"Eventos Nocturnos",    cat:"Nocturnos",   logo:"NG", tag:"Nuevo",      district:"Chorrillos",   catalogs:5  },
-  { id:"crystal-events",       name:"Crystal Events",         rating:4.7, category:"Bodas de Lujo",        cat:"Bodas",       logo:"CE",                   district:"La Molina",    catalogs:6  },
-  { id:"chef-andino",          name:"Chef Andino",            rating:4.6, category:"Comida Fusión",        cat:"Comida",      logo:"CA", tag:"Artesanal",  district:"Miraflores",   catalogs:4  },
-  { id:"elite-quinces",        name:"Elite Quinces Perú",     rating:4.5, category:"Quinceañeros",         cat:"Quinceañeros",logo:"EQ",                   district:"San Borja",    catalogs:5  },
-  { id:"gran-fiesta",          name:"Gran Fiesta Catering",   rating:4.3, category:"Eventos Sociales",     cat:"Sociales",    logo:"GF",                   district:"Magdalena",    catalogs:3  },
-  { id:"boda-perfecta",        name:"Boda Perfecta Perú",     rating:4.8, category:"Bodas de Lujo",        cat:"Bodas",       logo:"BP", tag:"Premium",    district:"San Isidro",   catalogs:7  },
-  { id:"cocina-del-mar",       name:"Cocina del Mar",         rating:4.6, category:"Comida Fusión",        cat:"Comida",      logo:"CM",                   district:"Barranco",     catalogs:4  },
-  { id:"imperial-events",      name:"Imperial Events",        rating:4.7, category:"Gala & Corporativo",   cat:"Corporativo", logo:"IE",                   district:"Surco",        catalogs:6  },
-  { id:"fiestas-lima",         name:"Fiestas Lima Premium",   rating:4.5, category:"Eventos Sociales",     cat:"Sociales",    logo:"FL",                   district:"Jesús María",  catalogs:3  },
-  { id:"sabor-y-elegancia",    name:"Sabor y Elegancia",      rating:4.9, category:"Comida Peruana",       cat:"Comida",      logo:"SE", tag:"Top",        district:"Miraflores",   catalogs:8  },
+// 24 empresas demo — en producción vendrán de Supabase con sus relaciones a 'events' (catálogos)
+// Cada empresa ahora tiene un arreglo de 'catalogos', y la lógica de filtrado depende de estos.
+const baseCompanies = [
+  { id:"ryan-smart-catering",  name:"Ryan Smart Catering",   rating:5.0, category:"Gala & Corporativo",  logo:"RS", tag:"Verificado", district:"Miraflores"  },
+  { id:"elite-events",         name:"Elite Events Perú",     rating:4.9, category:"Bodas de Lujo",        logo:"EE", tag:"Premium",    district:"San Isidro"  },
+  { id:"gourmet-peru",         name:"Gourmet Perú",          rating:4.8, category:"Comida Fusión",        logo:"GP", tag:"Nuevo",      district:"Surco"        },
+  { id:"midnight-banquets",    name:"Midnight Banquets",     rating:4.9, category:"Eventos Nocturnos",    logo:"MB",                   district:"La Molina"    },
+  { id:"la-gala-catering",     name:"La Gala Catering",      rating:4.7, category:"Quinceañeros",         logo:"LG",                   district:"San Borja"    },
+  { id:"sabores-andinos",      name:"Sabores Andinos",        rating:4.8, category:"Comida Peruana",       logo:"SA", tag:"Artesanal",  district:"Barranco"     },
+  { id:"prestige-events",      name:"Prestige Events",        rating:4.6, category:"Eventos Sociales",     logo:"PE",                   district:"Jesús María"  },
+  { id:"golden-banquet",       name:"Golden Banquet",         rating:4.9, category:"Bodas & Gala",         logo:"GB", tag:"Top",        district:"San Miguel"   },
+  { id:"luxe-moments",         name:"Luxe Moments",           rating:4.7, category:"Bodas de Lujo",        logo:"LM", tag:"Exclusivo",  district:"Miraflores"   },
+  { id:"fiesta-imperial",      name:"Fiesta Imperial",        rating:4.5, category:"Gala & Corporativo",   logo:"FI",                   district:"San Isidro"   },
+  { id:"dulces-momentos",      name:"Dulces Momentos",        rating:4.6, category:"Quinceañeros",         logo:"DM",                   district:"Lince"         },
+  { id:"alta-cocina-peru",     name:"Alta Cocina Perú",       rating:4.9, category:"Comida Fusión",        logo:"AC", tag:"Chef Award", district:"Barranco"     },
+  { id:"eventos-aurora",       name:"Eventos Aurora",         rating:4.5, category:"Eventos Sociales",     logo:"EA",                   district:"Pueblo Libre" },
+  { id:"banquetes-sol",        name:"Banquetes del Sol",      rating:4.4, category:"Comida Peruana",       logo:"BS",                   district:"Surquillo"    },
+  { id:"noche-de-gala",        name:"Noche de Gala",          rating:4.8, category:"Eventos Nocturnos",    logo:"NG", tag:"Nuevo",      district:"Chorrillos"   },
+  { id:"crystal-events",       name:"Crystal Events",         rating:4.7, category:"Bodas de Lujo",        logo:"CE",                   district:"La Molina"    },
+  { id:"chef-andino",          name:"Chef Andino",            rating:4.6, category:"Comida Fusión",        logo:"CA", tag:"Artesanal",  district:"Miraflores"   },
+  { id:"elite-quinces",        name:"Elite Quinces Perú",     rating:4.5, category:"Quinceañeros",         logo:"EQ",                   district:"San Borja"    },
+  { id:"gran-fiesta",          name:"Gran Fiesta Catering",   rating:4.3, category:"Eventos Sociales",     logo:"GF",                   district:"Magdalena"    },
+  { id:"boda-perfecta",        name:"Boda Perfecta Perú",     rating:4.8, category:"Bodas de Lujo",        logo:"BP", tag:"Premium",    district:"San Isidro"   },
+  { id:"cocina-del-mar",       name:"Cocina del Mar",         rating:4.6, category:"Comida Fusión",        logo:"CM",                   district:"Barranco"     },
+  { id:"imperial-events",      name:"Imperial Events",        rating:4.7, category:"Gala & Corporativo",   logo:"IE",                   district:"Surco"        },
+  { id:"fiestas-lima",         name:"Fiestas Lima Premium",   rating:4.5, category:"Eventos Sociales",     logo:"FL",                   district:"Jesús María"  },
+  { id:"sabor-y-elegancia",    name:"Sabor y Elegancia",      rating:4.9, category:"Comida Peruana",       logo:"SE", tag:"Top",        district:"Miraflores"   },
 ];
+
+// Generamos catálogos múltiples para demostrar que una empresa puede aparecer en varios filtros
+const companies = baseCompanies.map((c, i) => {
+  // Asignamos catálogos lógicos a algunas empresas clave para la demo
+  let catalogos = [];
+  if (c.id === "ryan-smart-catering") {
+    catalogos = [
+      { id: "1", title: "Boda Civil VIP", tipo_evento: "Bodas" },
+      { id: "2", title: "Lunch Ejecutivo", tipo_evento: "Corporativo" },
+      { id: "3", title: "Cena de Ensayo", tipo_evento: "Sociales" }
+    ];
+  } else if (c.id === "elite-events") {
+    catalogos = [
+      { id: "4", title: "Bodas de Oro", tipo_evento: "Bodas" },
+      { id: "5", title: "Fiesta Privada", tipo_evento: "Nocturnos" }
+    ];
+  } else if (c.id === "la-gala-catering") {
+    catalogos = [
+      { id: "6", title: "Quinces de Ensueño", tipo_evento: "Quinceañeros" },
+      { id: "7", title: "Catering Corporativo", tipo_evento: "Corporativo" }
+    ];
+  } else {
+    // Para el resto, generamos 1 o 2 catálogos aleatorios basados en su categoría base para poblar la demo
+    const defaultType = c.category.includes("Bodas") ? "Bodas" :
+                        c.category.includes("Corp") ? "Corporativo" :
+                        c.category.includes("Quince") ? "Quinceañeros" :
+                        c.category.includes("Comida") ? "Comida" :
+                        c.category.includes("Nocturno") ? "Nocturnos" : "Sociales";
+    
+    catalogos.push({ id: `c-${i}-1`, title: `Catálogo Principal ${c.name}`, tipo_evento: defaultType });
+    
+    // 30% de probabilidad de tener un segundo catálogo de otro tipo
+    if (i % 3 === 0) {
+      const extraTypes = FILTERS.filter(f => f !== "Todos" && f !== defaultType);
+      catalogos.push({ id: `c-${i}-2`, title: `Servicios Extra ${c.name}`, tipo_evento: extraTypes[i % extraTypes.length] });
+    }
+  }
+
+  return { ...c, catalogos };
+});
 
 const ITEMS_PER_PAGE = 8; // Exactamente 8 cards por página (4 columnas x 2 filas)
 
@@ -51,8 +92,14 @@ export default function ExplorarPage() {
 
   const filtered = useMemo(() =>
     companies.filter(c => {
-      const matchCat = activeFilter === "Todos" || c.cat === activeFilter;
-      const matchSearch = !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.district.toLowerCase().includes(search.toLowerCase()) || c.category.toLowerCase().includes(search.toLowerCase());
+      // 1. LÓGICA PRINCIPAL: Una empresa pasa el filtro si tiene al menos UN catálogo del tipo seleccionado
+      const matchCat = activeFilter === "Todos" || c.catalogos.some(cat => cat.tipo_evento === activeFilter);
+      
+      const matchSearch = !search || 
+        c.name.toLowerCase().includes(search.toLowerCase()) || 
+        c.district.toLowerCase().includes(search.toLowerCase()) || 
+        c.category.toLowerCase().includes(search.toLowerCase());
+        
       return matchCat && matchSearch;
     }),
   [search, activeFilter]);
@@ -60,7 +107,7 @@ export default function ExplorarPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const featuredCompany = companies[0]; // Ryan Smart Catering como destacado siempre en demo
+  const featuredCompany = companies[0]; // Ryan Smart Catering como destacado
 
   return (
     <main className="h-[100dvh] w-full bg-[#00050f] text-white overflow-hidden flex flex-col relative">
@@ -76,7 +123,6 @@ export default function ExplorarPage() {
           MULTIEVENTS
         </Link>
         <div className="flex items-center gap-4">
-          {/* Buscador Integrado en Nav */}
           <div className="relative hidden md:block">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gold/40 pointer-events-none" />
             <input
@@ -108,15 +154,19 @@ export default function ExplorarPage() {
               <Crown className="w-3 h-3" /> Ecosistema Premium
             </p>
             <h1 className="text-3xl font-luxury leading-tight mb-2">Directorio<br/><span className="text-white/40 italic">Exclusivo</span></h1>
-            <p className="text-xs text-white/40 leading-relaxed">Explora nuestra cuidada selección de proveedores de alto nivel para eventos excepcionales.</p>
+            <p className="text-xs text-white/40 leading-relaxed">Explora proveedores basados en el tipo de eventos y catálogos que ofrecen.</p>
           </div>
 
           {/* Filtros Estilizados */}
           <div className="mb-8 flex-1">
-            <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 mb-4 px-1">Categorías</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 mb-4 px-1">Tipos de Catálogos</p>
             <div className="flex flex-col gap-1.5">
               {FILTERS.map(f => {
-                const count = f === "Todos" ? companies.length : companies.filter(c => c.cat === f).length;
+                // Contamos cuántas empresas tienen al menos un catálogo de este tipo
+                const count = f === "Todos" 
+                  ? companies.filter(c => c.catalogos.length > 0).length 
+                  : companies.filter(c => c.catalogos.some(cat => cat.tipo_evento === f)).length;
+                
                 const isActive = activeFilter === f;
                 return (
                   <button
@@ -138,7 +188,7 @@ export default function ExplorarPage() {
             </div>
           </div>
 
-          {/* Tarjeta Destacada para rellenar espacio y dar lujo */}
+          {/* Tarjeta Destacada */}
           <div className="mt-auto relative rounded-2xl overflow-hidden border border-white/[0.08] p-5 group cursor-pointer">
             <div className="absolute inset-0 bg-gradient-to-br from-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="flex items-center gap-3 mb-3 relative z-10">
@@ -148,7 +198,7 @@ export default function ExplorarPage() {
                 <p className="text-sm font-luxury text-white truncate">{featuredCompany.name}</p>
               </div>
             </div>
-            <p className="text-[10px] text-white/40 mb-4 relative z-10 line-clamp-2">Reconocido por su excelencia en galas corporativas y bodas de alta gama.</p>
+            <p className="text-[10px] text-white/40 mb-4 relative z-10 line-clamp-2">Reconocido por su excelencia y múltiples opciones en Bodas y Corporativo.</p>
             <Link href={`/empresa/${featuredCompany.id}`} className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-gold hover:text-white transition-colors relative z-10">
               Ver perfil <ArrowRight className="w-3 h-3" />
             </Link>
@@ -163,39 +213,41 @@ export default function ExplorarPage() {
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
               <p className="text-xs text-white/60">
-                Mostrando <span className="text-white font-medium">{paginated.length}</span> resultados de <span className="text-white font-medium">{filtered.length}</span>
+                Mostrando <span className="text-white font-medium">{paginated.length}</span> empresas con catálogos de <span className="text-white font-medium">{activeFilter}</span>
               </p>
             </div>
             
-            {/* Controles de Paginación Superior (opcional, da simetría) */}
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] uppercase tracking-widest text-white/30">Página {currentPage} de {totalPages}</span>
-              <div className="flex gap-1.5">
-                <button 
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button 
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+            {/* Controles de Paginación Superior */}
+            {totalPages > 0 && (
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] uppercase tracking-widest text-white/30">Página {currentPage} de {totalPages}</span>
+                <div className="flex gap-1.5">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Grid Principal - SIN SCROLL, llena la pantalla */}
           <div className="flex-1 p-8">
             {paginated.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-white/20 border border-dashed border-white/10 rounded-3xl">
+              <div className="h-full flex flex-col items-center justify-center text-white/20 border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
                 <Search className="w-12 h-12 mb-4 text-white/10" />
                 <p className="text-2xl font-luxury mb-2 text-white/40">Sin resultados</p>
-                <p className="text-sm">Ajusta tu búsqueda o cambia de categoría.</p>
+                <p className="text-sm">Ninguna empresa tiene catálogos asignados a la categoría "{activeFilter}".</p>
               </div>
             ) : (
               <AnimatePresence mode="wait">
@@ -205,11 +257,10 @@ export default function ExplorarPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.4 }}
-                  // Usamos grid de 4 columnas x 2 filas asegurando que las filas ocupen el 50% del espacio
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full"
                   style={{ gridTemplateRows: 'repeat(2, minmax(0, 1fr))' }}
                 >
-                  {paginated.map((company, i) => (
+                  {paginated.map((company) => (
                     <Link key={company.id} href={`/empresa/${company.id}`} className="group block h-full">
                       <div className="h-full relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.06] group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(255,195,0,0.12)] flex flex-col group-hover:-translate-y-1">
                         
@@ -239,7 +290,17 @@ export default function ExplorarPage() {
 
                           <div className="pt-6">
                             <h3 className="text-lg font-luxury text-white/90 group-hover:text-gold transition-colors leading-tight mb-1">{company.name}</h3>
-                            <p className="text-[9px] uppercase tracking-[0.2em] text-gold/60 mb-3">{company.category}</p>
+                            
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {/* Mostramos los tipos de catálogos que ofrece esta empresa */}
+                              {Array.from(new Set(company.catalogos.map(cat => cat.tipo_evento))).map((tipo, idx) => (
+                                <span key={idx} className={`text-[8px] px-1.5 py-0.5 rounded border uppercase tracking-wider ${
+                                  tipo === activeFilter ? "bg-gold/20 border-gold/50 text-gold" : "bg-white/5 border-white/10 text-white/40"
+                                }`}>
+                                  {tipo}
+                                </span>
+                              ))}
+                            </div>
                             
                             <div className="flex items-center gap-1.5 text-white/40 group-hover:text-white/60 transition-colors">
                               <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -248,7 +309,7 @@ export default function ExplorarPage() {
                           </div>
 
                           <div className="mt-4 pt-4 border-t border-white/[0.05] flex items-center justify-between">
-                            <span className="text-[10px] text-white/30 uppercase tracking-widest">{company.catalogs} catálogos</span>
+                            <span className="text-[10px] text-white/30 uppercase tracking-widest">{company.catalogos.length} catálogos en total</span>
                             <div className="w-6 h-6 rounded-full border border-gold/0 group-hover:border-gold/40 flex items-center justify-center group-hover:bg-gold/10 transition-all duration-300">
                               <ChevronRight className="w-3 h-3 text-gold/0 group-hover:text-gold transition-colors" />
                             </div>
