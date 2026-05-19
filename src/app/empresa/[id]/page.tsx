@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Star, MapPin, Calendar, BookOpen, Phone, Globe, Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Calendar, BookOpen, Phone, Globe, Camera, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { UserNav } from "@/components/UserNav";
 
 const mockCompany = {
@@ -37,9 +37,20 @@ const TYPE_COLORS: Record<string, string> = {
 export default function EmpresaPage() {
   const company = mockCompany;
   const [catalogStart, setCatalogStart] = useState(0);
+  const [activeTab, setActiveTab] = useState("Todos");
+  const tabs = ["Todos", "Bodas", "Corporativo", "Sociales"];
+  
+  const filteredCatalogs = company.catalogs.filter(c => activeTab === "Todos" || c.type === activeTab);
+  
   const visible = 3; // cards visible a la vez en desktop
   const canPrev = catalogStart > 0;
-  const canNext = catalogStart + visible < company.catalogs.length;
+  const canNext = catalogStart + visible < filteredCatalogs.length;
+
+  // Resetea la paginacion cuando cambian los tabs
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setCatalogStart(0);
+  };
 
   return (
     <main className="h-[100dvh] w-full bg-[#00050f] text-white overflow-hidden flex flex-col relative">
@@ -117,10 +128,10 @@ export default function EmpresaPage() {
             <p className="text-xs text-white/40 leading-relaxed mb-5 max-w-sm">{company.description}</p>
 
             {/* Action buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {[Camera, Globe, Phone].map((Icon, i) => (
-                <button key={i} className="glass-btn w-9 h-9 flex items-center justify-center rounded-full hover:border-gold/40 transition-all">
-                  <Icon className="w-3.5 h-3.5 text-white/40" />
+                <button key={i} className="group w-10 h-10 flex items-center justify-center rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/60 hover:shadow-[0_0_15px_rgba(212,175,55,0.2)] transition-all duration-300">
+                  <Icon className="w-4 h-4 text-white/40 group-hover:text-[#D4AF37] transition-colors duration-300" />
                 </button>
               ))}
             </div>
@@ -142,7 +153,7 @@ export default function EmpresaPage() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 text-white/25 text-[9px] uppercase tracking-widest">
                 <BookOpen className="w-3 h-3" />
-                <span>{company.catalogs.length} catálogos</span>
+                <span>{filteredCatalogs.length} catálogos</span>
               </div>
               {/* Nav arrows */}
               <div className="flex gap-1.5">
@@ -154,7 +165,7 @@ export default function EmpresaPage() {
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
                 <button
-                  onClick={() => setCatalogStart(s => Math.min(company.catalogs.length - visible, s + 1))}
+                  onClick={() => setCatalogStart(s => Math.min(filteredCatalogs.length - visible, s + 1))}
                   disabled={!canNext}
                   className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all ${canNext ? "border-gold/30 text-gold hover:bg-gold/10" : "border-white/10 text-white/15 cursor-not-allowed"}`}
                 >
@@ -164,9 +175,26 @@ export default function EmpresaPage() {
             </div>
           </div>
 
+          {/* Filter Tabs */}
+          <div className="flex items-center gap-2 mb-1 overflow-x-auto pb-2 scrollbar-hide flex-none">
+            {tabs.map(tab => (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest transition-all whitespace-nowrap ${
+                  activeTab === tab 
+                    ? "bg-[#D4AF37]/15 border border-[#D4AF37]/80 text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)] font-bold" 
+                    : "bg-transparent border border-white/10 text-white/40 hover:text-white hover:border-white/30"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
           {/* Catalog cards — 3 columnas, altura fija para llenar el espacio */}
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-0">
-            {company.catalogs.slice(catalogStart, catalogStart + visible * 2).map((catalog, idx) => (
+            {filteredCatalogs.slice(catalogStart, catalogStart + visible * 2).map((catalog, idx) => (
               <Link key={catalog.id} href={`/evento/${catalog.id}`} className="group block min-h-0">
                 <div className="h-full relative overflow-hidden rounded-xl border border-white/[0.07] group-hover:border-gold/40 transition-all duration-400 group-hover:shadow-[0_0_40px_rgba(255,195,0,0.1)] flex flex-col">
 
@@ -207,9 +235,9 @@ export default function EmpresaPage() {
                         <span className="text-[8px] text-white/15">·</span>
                         <span className="text-[8px] text-white/25">{catalog.items} secciones</span>
                       </div>
-                      <div className="flex items-center gap-1 text-gold/0 group-hover:text-gold/70 transition-all duration-300">
-                        <span className="text-[8px] uppercase tracking-widest whitespace-nowrap">Ver</span>
-                        <ChevronRight className="w-2.5 h-2.5" />
+                      <div className="flex items-center gap-1.5 text-[#D4AF37]/70 group-hover:text-[#D4AF37] transition-all duration-300">
+                        <span className="text-[9px] uppercase tracking-widest whitespace-nowrap font-bold">Explorar Catálogo</span>
+                        <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
                     {/* Gold reveal line */}
@@ -222,7 +250,7 @@ export default function EmpresaPage() {
 
           {/* Pagination dots */}
           <div className="flex-none flex justify-center gap-1.5">
-            {Array.from({ length: Math.ceil(company.catalogs.length / visible) }).map((_, i) => (
+            {Array.from({ length: Math.ceil(filteredCatalogs.length / visible) }).map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCatalogStart(i * visible)}
