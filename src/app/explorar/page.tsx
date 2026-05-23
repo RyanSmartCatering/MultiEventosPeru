@@ -232,7 +232,7 @@ export default function ExplorarPage() {
         </aside>
 
         {/* ══ PANEL DERECHO: Paginación + Grid Fijo ══ */}
-        <div className="flex-1 flex flex-col overflow-hidden relative">
+        <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative scrollbar-hide">
           
           {/* Header del Grid */}
           <div className="flex-none flex items-center justify-between px-8 py-5 border-b border-white/[0.03]">
@@ -296,14 +296,14 @@ export default function ExplorarPage() {
                           <Image src={company.image} alt={company.name} fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#050B14] via-[#050B14]/40 to-transparent" />
                           
-                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/80 backdrop-blur-md border border-[#D4AF37]/40 px-2 py-1 rounded-full">
-                            <Star className="w-2.5 h-2.5 text-[#D4AF37] fill-[#D4AF37]" />
-                            <span className="text-[10px] font-bold text-white">{company.rating}</span>
+                          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-[#D4AF37]/40 px-2.5 py-1 rounded-full">
+                            <Star className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
+                            <span className="text-xs font-bold text-white">{company.rating}</span>
                           </div>
                           
                           {company.tag && (
-                            <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full border backdrop-blur-md ${getBadgeClasses(company.tag)}`}>
-                              <span className="text-[8px] uppercase tracking-widest font-bold">{company.tag}</span>
+                            <div className={`absolute top-3 left-3 px-3 py-1.5 rounded-full border backdrop-blur-md ${getBadgeClasses(company.tag)}`}>
+                              <span className="text-[10px] uppercase tracking-widest font-bold">{company.tag}</span>
                             </div>
                           )}
                         </div>
@@ -318,25 +318,25 @@ export default function ExplorarPage() {
                           <div className="pt-6">
                             <h3 className="text-lg font-luxury text-white group-hover:text-[#D4AF37] transition-colors leading-tight mb-2">{company.name}</h3>
                             
-                            <div className="flex flex-wrap gap-1.5 mb-3">
+                            <div className="flex flex-wrap gap-2 mb-3">
                               {/* Mostramos los tipos de catálogos que ofrece esta empresa */}
                               {Array.from(new Set(company.catalogos.map(cat => cat.tipo_evento))).map((tipo, idx) => (
-                                <span key={idx} className="text-[7px] px-2 py-0.5 rounded-full border border-[#D4AF37]/50 uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 font-bold">
+                                <span key={idx} className="text-[10px] px-2.5 py-1 rounded-full border border-[#D4AF37]/50 uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 font-bold">
                                   {tipo}
                                 </span>
                               ))}
                             </div>
                             
-                            <div className="flex items-center gap-1.5 text-white/60 group-hover:text-white transition-colors">
-                              <MapPin className="w-3 h-3 flex-shrink-0 text-[#D4AF37]/70" />
-                              <span className="text-[10px] tracking-wide truncate">{company.district}</span>
+                            <div className="flex items-center gap-2 text-white/60 group-hover:text-white transition-colors">
+                              <MapPin className="w-4 h-4 flex-shrink-0 text-[#D4AF37]/70" />
+                              <span className="text-xs tracking-wide truncate">{company.district}</span>
                             </div>
                           </div>
 
                           <div className="mt-auto pt-4 border-t border-white/[0.04] flex items-center justify-between">
-                            <span className="text-[9px] text-white/50 uppercase tracking-[0.2em] font-semibold">{company.catalogos.length} catálogos en total</span>
-                            <div className="w-6 h-6 rounded-full border border-transparent group-hover:border-[#D4AF37]/60 flex items-center justify-center group-hover:bg-[#D4AF37]/20 transition-all duration-300">
-                              <ChevronRight className="w-3 h-3 text-transparent group-hover:text-[#D4AF37] transition-colors" />
+                            <span className="text-xs text-white/50 uppercase tracking-[0.15em] font-semibold">{company.catalogos.length} catálogos en total</span>
+                            <div className="w-7 h-7 rounded-full border border-transparent group-hover:border-[#D4AF37]/60 flex items-center justify-center group-hover:bg-[#D4AF37]/20 transition-all duration-300">
+                              <ChevronRight className="w-4 h-4 text-transparent group-hover:text-[#D4AF37] transition-colors" />
                             </div>
                           </div>
                         </div>
