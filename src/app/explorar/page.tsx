@@ -3,14 +3,12 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Star, MapPin, ChevronRight, SlidersHorizontal, X, ChevronLeft, Award, Crown, ArrowRight } from "lucide-react";
+import { Search, Star, MapPin, ChevronRight, X, ChevronLeft, Award, Crown, ArrowRight } from "lucide-react";
 import { UserNav } from "@/components/UserNav";
 import { motion, AnimatePresence } from "framer-motion";
 
 const FILTERS = ["Todos", "Bodas", "Corporativo", "Quinceañeros", "Comida", "Nocturnos", "Sociales"];
 
-// 24 empresas demo — en producción vendrán de Supabase con sus relaciones a 'events' (catálogos)
-// Cada empresa ahora tiene un arreglo de 'catalogos', y la lógica de filtrado depende de estos.
 const baseCompanies = [
   { id:"ryan-smart-catering",  name:"Ryan Smart Catering",   rating:5.0, category:"Gala & Corporativo",  logo:"RS", tag:"Verificado", district:"Miraflores"  },
   { id:"elite-events",         name:"Elite Events Perú",     rating:4.9, category:"Bodas de Lujo",        logo:"EE", tag:"Premium",    district:"San Isidro"  },
@@ -49,10 +47,8 @@ const premiumImages = [
   "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?q=80&w=800&auto=format&fit=crop"
 ];
 
-// Generamos catálogos múltiples para demostrar que una empresa puede aparecer en varios filtros
 const companies = baseCompanies.map((c, i) => {
-  // Asignamos catálogos lógicos a algunas empresas clave para la demo
-  let catalogos = [];
+  let catalogos: { id: string; title: string; tipo_evento: string }[] = [];
   if (c.id === "ryan-smart-catering") {
     catalogos = [
       { id: "1", title: "Boda Civil VIP", tipo_evento: "Bodas" },
@@ -70,25 +66,18 @@ const companies = baseCompanies.map((c, i) => {
       { id: "7", title: "Catering Corporativo", tipo_evento: "Corporativo" }
     ];
   } else {
-    // Para el resto, generamos 1 o 2 catálogos aleatorios basados en su categoría base para poblar la demo
     const defaultType = c.category.includes("Bodas") ? "Bodas" :
                         c.category.includes("Corp") ? "Corporativo" :
                         c.category.includes("Quince") ? "Quinceañeros" :
                         c.category.includes("Comida") ? "Comida" :
                         c.category.includes("Nocturno") ? "Nocturnos" : "Sociales";
-    
     catalogos.push({ id: `c-${i}-1`, title: `Catálogo Principal ${c.name}`, tipo_evento: defaultType });
-    
-    // 30% de probabilidad de tener un segundo catálogo de otro tipo
     if (i % 3 === 0) {
       const extraTypes = FILTERS.filter(f => f !== "Todos" && f !== defaultType);
       catalogos.push({ id: `c-${i}-2`, title: `Servicios Extra ${c.name}`, tipo_evento: extraTypes[i % extraTypes.length] });
     }
   }
-
-  const image = premiumImages[i % premiumImages.length];
-
-  return { ...c, catalogos, image };
+  return { ...c, catalogos, image: premiumImages[i % premiumImages.length] };
 });
 
 const getBadgeClasses = (tag: string) => {
@@ -98,52 +87,45 @@ const getBadgeClasses = (tag: string) => {
   if (lower === "premium" || lower === "top" || lower === "exclusivo") return "text-[#D4AF37] border-[#D4AF37]/60 bg-black/40 shadow-[0_0_20px_rgba(212,175,55,0.25)]";
   if (lower === "artesanal") return "text-orange-300 border-orange-500/50 bg-black/40 shadow-[0_0_15px_rgba(251,146,60,0.2)]";
   if (lower === "chef award") return "text-rose-300 border-rose-500/50 bg-black/40 shadow-[0_0_15px_rgba(244,63,94,0.2)]";
-  return "text-[#D4AF37] border-[#D4AF37]/40 bg-black/40"; // fallback
+  return "text-[#D4AF37] border-[#D4AF37]/40 bg-black/40";
 };
 
-
-const ITEMS_PER_PAGE = 8; // Exactamente 8 cards por página (4 columnas x 2 filas)
+// 4 cards por página = 1 fila de 4 columnas, todo visible sin scroll
+const ITEMS_PER_PAGE = 4;
 
 export default function ExplorarPage() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("Todos");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, activeFilter]);
 
   const filtered = useMemo(() =>
     companies.filter(c => {
-      // 1. LÓGICA PRINCIPAL: Una empresa pasa el filtro si tiene al menos UN catálogo del tipo seleccionado
       const matchCat = activeFilter === "Todos" || c.catalogos.some(cat => cat.tipo_evento === activeFilter);
-      
-      const matchSearch = !search || 
-        c.name.toLowerCase().includes(search.toLowerCase()) || 
-        c.district.toLowerCase().includes(search.toLowerCase()) || 
+      const matchSearch = !search ||
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.district.toLowerCase().includes(search.toLowerCase()) ||
         c.category.toLowerCase().includes(search.toLowerCase());
-        
       return matchCat && matchSearch;
     }),
   [search, activeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-
-  const featuredCompany = companies[0]; // Ryan Smart Catering como destacado
+  const featuredCompany = companies[0];
 
   return (
     <main className="h-[100dvh] w-full bg-[#000511] text-white overflow-hidden flex flex-col relative">
-      {/* Fondo inmersivo Premium: Noche y Oro Verdadero */}
+      {/* Fondo inmersivo */}
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=2070')] bg-cover bg-center opacity-25 mix-blend-screen pointer-events-none -z-20" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#000511]/40 via-[#000511]/90 to-[#000105] pointer-events-none -z-10" />
-      
-      {/* Nebulosas doradas (detrás de todo) */}
       <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#D4AF37]/15 blur-[150px] rounded-full pointer-events-none -z-10" />
       <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#D4AF37]/15 blur-[150px] rounded-full pointer-events-none -z-10" />
 
-      {/* ── TOP NAV TRANSPARENTE ── */}
+      {/* TOP NAV */}
       <nav className="relative z-50 flex-none flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/5 bg-transparent backdrop-blur-md">
         <Link href="/" className="text-xl font-luxury text-[#D4AF37] font-bold tracking-tighter hover:opacity-80 transition-opacity drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">
           MULTIEVENTS
@@ -169,44 +151,40 @@ export default function ExplorarPage() {
         </div>
       </nav>
 
-      {/* ── MAIN DASHBOARD LAYOUT ── */}
-      <div className="relative z-10 flex-1 flex overflow-hidden">
-        
-        {/* ══ PANEL IZQUIERDO TRANSPARENTE ══ */}
-        <aside className="hidden md:flex flex-col w-[340px] border-r border-white/5 bg-transparent backdrop-blur-md p-6 flex-none relative z-10">
-          
+      {/* MAIN LAYOUT */}
+      <div className="relative z-10 flex-1 flex overflow-hidden min-h-0">
+
+        {/* PANEL IZQUIERDO */}
+        <aside className="hidden md:flex flex-col w-[300px] xl:w-[340px] border-r border-white/5 bg-transparent backdrop-blur-md p-6 flex-none">
           <div className="mb-8">
             <p className="text-[9px] uppercase tracking-[0.4em] text-[#D4AF37] mb-2 flex items-center gap-2">
               <Crown className="w-3 h-3" /> Ecosistema Premium
             </p>
-            <h1 className="text-3xl font-luxury leading-tight mb-2">Directorio<br/><span className="text-white/40 italic">Exclusivo</span></h1>
+            <h1 className="text-3xl font-luxury leading-tight mb-2">Directorio<br /><span className="text-white/40 italic">Exclusivo</span></h1>
             <p className="text-xs text-white/40 leading-relaxed">Explora proveedores basados en el tipo de eventos y catálogos que ofrecen.</p>
           </div>
 
-          {/* Filtros Estilizados */}
           <div className="mb-8 flex-1">
             <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 mb-4 px-1">Tipos de Catálogos</p>
             <div className="flex flex-col gap-1.5">
               {FILTERS.map(f => {
-                // Contamos cuántas empresas tienen al menos un catálogo de este tipo
-                const count = f === "Todos" 
-                  ? companies.filter(c => c.catalogos.length > 0).length 
+                const count = f === "Todos"
+                  ? companies.filter(c => c.catalogos.length > 0).length
                   : companies.filter(c => c.catalogos.some(cat => cat.tipo_evento === f)).length;
-                
                 const isActive = activeFilter === f;
                 return (
                   <button
                     key={f}
                     onClick={() => setActiveFilter(f)}
                     className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border ${
-                      isActive 
-                        ? "bg-gradient-to-r from-[#D4AF37]/20 to-transparent border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.1)]" 
+                      isActive
+                        ? "bg-gradient-to-r from-[#D4AF37]/20 to-transparent border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.1)]"
                         : "bg-transparent border-transparent text-white/40 hover:bg-white/5 hover:text-white"
                     }`}
                   >
                     <span className="text-xs tracking-wide">{f}</span>
                     <span className={`text-[10px] font-mono ${isActive ? "text-[#D4AF37] drop-shadow-[0_0_10px_rgba(212,175,55,0.8)] font-bold" : "text-white/60"}`}>
-                      {String(count).padStart(2, '0')}
+                      {String(count).padStart(2, "0")}
                     </span>
                   </button>
                 );
@@ -214,7 +192,7 @@ export default function ExplorarPage() {
             </div>
           </div>
 
-          {/* Tarjeta Destacada */}
+          {/* Empresa Destacada */}
           <div className="mt-auto relative rounded-2xl overflow-hidden border border-[#D4AF37]/30 p-5 group cursor-pointer bg-white/[0.02] backdrop-blur-md">
             <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="flex items-center gap-3 mb-3 relative z-10">
@@ -231,34 +209,33 @@ export default function ExplorarPage() {
           </div>
         </aside>
 
-        {/* ══ PANEL DERECHO: Paginación + Grid Fijo ══ */}
-        <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative scrollbar-hide">
-          
-          {/* Header del Grid */}
+        {/* PANEL DERECHO */}
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+
+          {/* Header */}
           <div className="flex-none flex items-center justify-between px-8 py-5 border-b border-white/[0.03]">
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
               <p className="text-xs text-white/60">
-                Mostrando <span className="text-white font-medium">{paginated.length}</span> empresas con catálogos de <span className="text-white font-medium">{activeFilter}</span>
+                <span className="text-white font-medium">{filtered.length}</span> empresas encontradas · <span className="text-white font-medium">{activeFilter}</span>
               </p>
             </div>
-            
-            {/* Controles de Paginación Superior */}
-            {totalPages > 0 && (
+
+            {totalPages > 1 && (
               <div className="flex items-center gap-3">
                 <span className="text-[10px] uppercase tracking-widest text-white/30">Página {currentPage} de {totalPages}</span>
                 <div className="flex gap-1.5">
-                  <button 
+                  <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-yellow-500/40 hover:text-yellow-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-[#D4AF37]/40 hover:text-[#D4AF37] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-yellow-500/40 hover:text-yellow-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-[#D4AF37]/40 hover:text-[#D4AF37] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -267,40 +244,39 @@ export default function ExplorarPage() {
             )}
           </div>
 
-          {/* Grid Principal - SIN SCROLL, llena la pantalla */}
-          <div className="flex-1 p-8">
+          {/* Grid - ocupa todo el espacio restante */}
+          <div className="flex-1 min-h-0 p-6 xl:p-8">
             {paginated.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-white/20 border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
                 <Search className="w-12 h-12 mb-4 text-white/10" />
                 <p className="text-2xl font-luxury mb-2 text-white/40">Sin resultados</p>
-                <p className="text-sm">Ninguna empresa tiene catálogos asignados a la categoría "{activeFilter}".</p>
+                <p className="text-sm">Ninguna empresa tiene catálogos de &ldquo;{activeFilter}&rdquo;.</p>
               </div>
             ) : (
               <AnimatePresence mode="wait">
-                <motion.div 
+                <motion.div
                   key={currentPage + activeFilter + search}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.4 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[380px]"
+                  transition={{ duration: 0.35 }}
+                  className="h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 xl:gap-6"
                 >
                   {paginated.map((company) => (
                     <Link key={company.id} href={`/empresa/${company.id}`} className="group block h-full">
                       <div className={`h-full relative overflow-hidden rounded-2xl bg-[#050B14]/80 backdrop-blur-xl border transition-all duration-500 flex flex-col group-hover:-translate-y-1 ${
-                        company.id === featuredCompany.id ? "border-[#D4AF37]/80 shadow-[0_0_20px_rgba(212,175,55,0.3)]" : "border-white/10 group-hover:border-[#D4AF37]/50 group-hover:shadow-[0_0_30px_rgba(212,175,55,0.2)]"
+                        company.id === featuredCompany.id
+                          ? "border-[#D4AF37]/80 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                          : "border-white/10 group-hover:border-[#D4AF37]/50 group-hover:shadow-[0_0_30px_rgba(212,175,55,0.2)]"
                       }`}>
-                        
-                        {/* Cover Image */}
-                        <div className="relative h-[50%] flex-none overflow-hidden">
+                        {/* Cover */}
+                        <div className="relative flex-1 overflow-hidden">
                           <Image src={company.image} alt={company.name} fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#050B14] via-[#050B14]/40 to-transparent" />
-                          
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#050B14] via-[#050B14]/30 to-transparent" />
                           <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-[#D4AF37]/40 px-2.5 py-1 rounded-full">
                             <Star className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
                             <span className="text-xs font-bold text-white">{company.rating}</span>
                           </div>
-                          
                           {company.tag && (
                             <div className={`absolute top-3 left-3 px-3 py-1.5 rounded-full border backdrop-blur-md ${getBadgeClasses(company.tag)}`}>
                               <span className="text-[10px] uppercase tracking-widest font-bold">{company.tag}</span>
@@ -308,35 +284,29 @@ export default function ExplorarPage() {
                           )}
                         </div>
 
-                        {/* Content */}
-                        <div className="flex-1 flex flex-col p-5 relative z-10">
-                          {/* Logo Avatar overlapping cover */}
-                          <div className="absolute -top-6 left-5 w-12 h-12 bg-[#020617] rounded-xl border border-[#D4AF37]/60 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.2)] transform group-hover:rotate-6 transition-transform duration-500">
+                        {/* Info - altura fija para que todos sean iguales */}
+                        <div className="flex-none flex flex-col p-4 relative z-10 h-[160px]">
+                          <div className="absolute -top-5 left-4 w-10 h-10 bg-[#020617] rounded-xl border border-[#D4AF37]/60 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.2)] transform group-hover:rotate-6 transition-transform duration-500">
                             <span className="text-xs font-luxury text-[#D4AF37]">{company.logo}</span>
                           </div>
-
-                          <div className="pt-6">
-                            <h3 className="text-lg font-luxury text-white group-hover:text-[#D4AF37] transition-colors leading-tight mb-2">{company.name}</h3>
-                            
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {/* Mostramos los tipos de catálogos que ofrece esta empresa */}
-                              {Array.from(new Set(company.catalogos.map(cat => cat.tipo_evento))).map((tipo, idx) => (
-                                <span key={idx} className="text-[10px] px-2.5 py-1 rounded-full border border-[#D4AF37]/50 uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 font-bold">
+                          <div className="pt-5">
+                            <h3 className="text-base font-luxury text-white group-hover:text-[#D4AF37] transition-colors leading-tight mb-2 line-clamp-1">{company.name}</h3>
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              {Array.from(new Set(company.catalogos.map(cat => cat.tipo_evento))).slice(0, 2).map((tipo, idx) => (
+                                <span key={idx} className="text-[9px] px-2 py-0.5 rounded-full border border-[#D4AF37]/50 uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 font-bold">
                                   {tipo}
                                 </span>
                               ))}
                             </div>
-                            
                             <div className="flex items-center gap-2 text-white/60 group-hover:text-white transition-colors">
-                              <MapPin className="w-4 h-4 flex-shrink-0 text-[#D4AF37]/70" />
+                              <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[#D4AF37]/70" />
                               <span className="text-xs tracking-wide truncate">{company.district}</span>
                             </div>
                           </div>
-
-                          <div className="mt-auto pt-4 border-t border-white/[0.04] flex items-center justify-between">
-                            <span className="text-xs text-white/50 uppercase tracking-[0.15em] font-semibold">{company.catalogos.length} catálogos en total</span>
-                            <div className="w-7 h-7 rounded-full border border-transparent group-hover:border-[#D4AF37]/60 flex items-center justify-center group-hover:bg-[#D4AF37]/20 transition-all duration-300">
-                              <ChevronRight className="w-4 h-4 text-transparent group-hover:text-[#D4AF37] transition-colors" />
+                          <div className="mt-auto pt-3 border-t border-white/[0.04] flex items-center justify-between">
+                            <span className="text-[10px] text-white/50 uppercase tracking-[0.1em] font-semibold">{company.catalogos.length} catálogos</span>
+                            <div className="w-6 h-6 rounded-full border border-transparent group-hover:border-[#D4AF37]/60 flex items-center justify-center group-hover:bg-[#D4AF37]/20 transition-all duration-300">
+                              <ChevronRight className="w-3.5 h-3.5 text-transparent group-hover:text-[#D4AF37] transition-colors" />
                             </div>
                           </div>
                         </div>
@@ -348,15 +318,15 @@ export default function ExplorarPage() {
             )}
           </div>
 
-          {/* Footer del Grid (Paginación Inferior) */}
+          {/* Paginación dots */}
           {totalPages > 1 && (
-            <div className="flex-none px-8 py-5 border-t border-white/[0.03] flex items-center justify-center gap-2 relative z-10">
+            <div className="flex-none px-8 py-4 border-t border-white/[0.03] flex items-center justify-center gap-2">
               {Array.from({ length: totalPages }).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    currentPage === i + 1 ? "w-8 bg-yellow-500" : "w-2 bg-white/20 hover:bg-white/40"
+                    currentPage === i + 1 ? "w-8 bg-[#D4AF37]" : "w-2 bg-white/20 hover:bg-white/40"
                   }`}
                   aria-label={`Ir a la página ${i + 1}`}
                 />
